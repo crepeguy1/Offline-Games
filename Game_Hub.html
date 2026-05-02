@@ -88,10 +88,10 @@
   <h1>My Game Hub</h1>
   <p>Click on a game to play it!</p>
 
-  <!-- search box -->
+  <!-- i added a search box so you can find games easier -->
   <input type="text" id="search" placeholder="Search games...">
 
-  <!-- game buttons -->
+  <!-- all the game buttons go here -->
   <nav id="game-nav">
     <button class="game-button" onclick="loadGame('games/New_Game.html')" aria-label="Play Reaction Time Game">
       Reaction Time Game
@@ -175,7 +175,7 @@
 
   <!-- javascript -->
   <script>
-    // search function
+    // this makes the search work - i learned this from w3schools
     const searchInput = document.getElementById('search');
     const gameNav = document.getElementById('game-nav');
     const buttons = gameNav.querySelectorAll('.game-button');
@@ -188,7 +188,7 @@
       });
     });
 
-    // load game function
+    // this function loads the games in the iframe - pretty cool huh?
     function loadGame(file) {
       const iframe = document.getElementById("gameFrame");
       const loading = document.getElementById("loading");
@@ -206,7 +206,7 @@
       };
     }
 
-    // back to hub
+    // goes back to the hub - simple but works
     function backToHub() {
       const iframe = document.getElementById("gameFrame");
       const loading = document.getElementById("loading");
@@ -220,7 +220,7 @@
   </script>
 
   <footer>
-    <p>Enjoy these classic games! Built with HTML.</p>
+    <p>Hope you like my games! I made them all.</p>
   </footer>
 
 </body>
