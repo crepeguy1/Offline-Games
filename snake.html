@@ -109,15 +109,31 @@
       document.addEventListener("keydown", e => {
           if (!started) started = true;
 
-          if (e.key === "ArrowUp" && direction.y === 0) setDirection(0, -1);
-          else if (e.key === "ArrowDown" && direction.y === 0) setDirection(0, 1);
-          else if (e.key === "ArrowLeft" && direction.x === 0) setDirection(-1, 0);
-          else if (e.key === "ArrowRight" && direction.x === 0) setDirection(1, 0);
-
-          else if (e.key === "w" && direction.y === 0) setDirection(0, -1);
-          else if (e.key === "s" && direction.y === 0) setDirection(0, 1);
-          else if (e.key === "a" && direction.x === 0) setDirection(-1, 0);
-          else if (e.key === "d" && direction.x === 0) setDirection(1, 0);
+          if (e.key === "ArrowUp" && direction.y === 0) {
+            e.preventDefault();
+            setDirection(0, -1);
+          } else if (e.key === "ArrowDown" && direction.y === 0) {
+            e.preventDefault();
+            setDirection(0, 1);
+          } else if (e.key === "ArrowLeft" && direction.x === 0) {
+            e.preventDefault();
+            setDirection(-1, 0);
+          } else if (e.key === "ArrowRight" && direction.x === 0) {
+            e.preventDefault();
+            setDirection(1, 0);
+          } else if (e.key === "w" && direction.y === 0) {
+            e.preventDefault();
+            setDirection(0, -1);
+          } else if (e.key === "s" && direction.y === 0) {
+            e.preventDefault();
+            setDirection(0, 1);
+          } else if (e.key === "a" && direction.x === 0) {
+            e.preventDefault();
+            setDirection(-1, 0);
+          } else if (e.key === "d" && direction.x === 0) {
+            e.preventDefault();
+            setDirection(1, 0);
+          }
       });
 
       // SWIPE CONTROLS

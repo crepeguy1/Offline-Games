@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My Game Hub</title>
   <style>
     body {
@@ -16,25 +17,59 @@
       margin-bottom: 10px;
     }
 
+    nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+      max-width: 800px;
+      margin: 0 auto 20px;
+    }
+
     .game-button {
-      display: block;
-      width: 80%;
-      margin: 12px auto;
       padding: 15px;
       font-size: 20px;
       background: #1e90ff;
       border: none;
       border-radius: 10px;
       color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .game-button:hover, .game-button:focus {
+      background: #4169e1;
     }
 
     iframe {
       width: 95%;
+      max-width: 800px;
       height: 500px;
       border: 2px solid #444;
       border-radius: 10px;
       margin-top: 20px;
       background: white;
+      display: none;
+    }
+
+    #loading {
+      display: none;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #back-button {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #ff4500;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+
+    #back-button:hover {
+      background: #dc143c;
     }
   </style>
 </head>
@@ -43,47 +78,73 @@
   <h1>My Game Hub</h1>
   <p>Tap a game to play it below.</p>
 
-  <!-- Add buttons for each game -->
+  <nav>
+    <button class="game-button" onclick="loadGame('New_Game.html')" aria-label="Play Reaction Time Game">
+      Reaction Time Game
+    </button>
 
+    <button class="game-button" onclick="loadGame('breakout.html')" aria-label="Play Breakout Game">
+      Breakout
+    </button>
 
-  <button class="game-button" onclick="loadGame('New_Game.html')">
-    Reaction Time Game
-  </button>
+    <button class="game-button" onclick="loadGame('2048.html')" aria-label="Play 2048 Game">
+      2048
+    </button>
 
-  <button class="game-button" onclick="loadGame('breakout.html')">
-    Breakout
-  </button>
+    <button class="game-button" onclick="loadGame('dine_game.html')" aria-label="Play Dino Plus Game">
+      Dino Plus
+    </button>
 
-  <button class="game-button" onclick="loadGame('2048.html')">
-    2048
-  </button>
+    <button class="game-button" onclick="loadGame('snake.html')" aria-label="Play Snake Game">
+      Snake
+    </button>
 
-<button class="game-button" onclick="loadGame('dine_game.html')">Dino Plus</button>
-    Dino Run
-  </button>
+    <button class="game-button" onclick="loadGame('tetris.html')" aria-label="Play Tetris Game">
+      Tetris
+    </button>
 
-  <button class="game-button" onclick="loadGame('snake.html')">
-    Snake
-  </button>
+    <button class="game-button" onclick="loadGame('flappy_bird.html')" aria-label="Play Flappy Bird Clone">
+      Flappy Clone 
+    </button>
 
-  <button class="game-button" onclick="loadGame('tetris.html')">
-    Tetris
-  </button>
+    <button class="game-button" onclick="loadGame('minesweeper.html')" aria-label="Play Minesweeper Game">
+      Minesweeper
+    </button>
+  </nav>
 
-  <button class="game-button" onclick="loadGame('flappy_bird.html')">
-    Flappy Clone 
-  </button>
-
-  <button class="game-button" onclick="loadGame('minesweeper.html')">
-    Minesweeper
-  </button>
+  <div id="loading">Loading game...</div>
+  <button id="back-button" onclick="backToHub()">Back to Hub</button>
 
   <!-- Game viewer -->
   <iframe id="gameFrame"></iframe>
 
   <script>
     function loadGame(file) {
-      document.getElementById("gameFrame").src = file;
+      const iframe = document.getElementById("gameFrame");
+      const loading = document.getElementById("loading");
+      const backBtn = document.getElementById("back-button");
+      
+      loading.style.display = "block";
+      iframe.style.display = "none";
+      backBtn.style.display = "none";
+      
+      iframe.src = file;
+      iframe.onload = function() {
+        loading.style.display = "none";
+        iframe.style.display = "block";
+        backBtn.style.display = "block";
+      };
+    }
+
+    function backToHub() {
+      const iframe = document.getElementById("gameFrame");
+      const loading = document.getElementById("loading");
+      const backBtn = document.getElementById("back-button");
+      
+      iframe.src = "";
+      iframe.style.display = "none";
+      loading.style.display = "none";
+      backBtn.style.display = "none";
     }
   </script>
 

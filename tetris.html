@@ -158,10 +158,22 @@ function drop() {
 
 document.addEventListener("keydown", e => {
   if (gameOver) return;
-  if (e.key === "ArrowLeft" || e.key === "a") moveLeft();
-  if (e.key === "ArrowRight" || e.key === "d") moveRight();
-  if (e.key === "ArrowUp" || e.key === "w") rotate();
-  if (e.key === "ArrowDown" || e.key === "s") drop();
+  if (e.key === "ArrowLeft" || e.key === "a") {
+    e.preventDefault();
+    moveLeft();
+  }
+  if (e.key === "ArrowRight" || e.key === "d") {
+    e.preventDefault();
+    moveRight();
+  }
+  if (e.key === "ArrowUp" || e.key === "w") {
+    e.preventDefault();
+    rotate();
+  }
+  if (e.key === "ArrowDown" || e.key === "s") {
+    e.preventDefault();
+    drop();
+  }
 });
 
 function draw() {

@@ -167,10 +167,45 @@ function move(direction) {
 }
 
 document.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft" || e.key === "a") move("left");
-  else if (e.key === "ArrowRight" || e.key === "d") move("right");
-  else if (e.key === "ArrowUp" || e.key === "w") move("up");
-  else if (e.key === "ArrowDown" || e.key === "s") move("down");
+  if (e.key === "ArrowLeft" || e.key === "a") {
+    e.preventDefault();
+    move("left");
+  } else if (e.key === "ArrowRight" || e.key === "d") {
+    e.preventDefault();
+    move("right");
+  } else if (e.key === "ArrowUp" || e.key === "w") {
+    e.preventDefault();
+    move("up");
+  } else if (e.key === "ArrowDown" || e.key === "s") {
+    e.preventDefault();
+    move("down");
+  }
+});
+
+// Swipe support for mobile
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', function(e) {
+  if (!touchStartX || !touchStartY) return;
+  let touchEndX = e.changedTouches[0].clientX;
+  let touchEndY = e.changedTouches[0].clientY;
+  let diffX = touchEndX - touchStartX;
+  let diffY = touchEndY - touchStartY;
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    if (diffX > 50) move('right');
+    else if (diffX < -50) move('left');
+  } else {
+    if (diffY > 50) move('down');
+    else if (diffY < -50) move('up');
+  }
+  touchStartX = 0;
+  touchStartY = 0;
 });
 
 function checkGameOver() {

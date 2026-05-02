@@ -133,15 +133,18 @@ function initClouds() {
 
 document.addEventListener("keydown", e => {
   if (e.key === " " || e.key === "ArrowUp" || e.key === "w") {
+    e.preventDefault();
     jump();
   }
   if (e.key === "ArrowDown" || e.key === "s") {
+    e.preventDefault();
     dino.ducking = true;
   }
 });
 
 document.addEventListener("keyup", e => {
   if (e.key === "ArrowDown" || e.key === "s") {
+    e.preventDefault();
     dino.ducking = false;
   }
 });
