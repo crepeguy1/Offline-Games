@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Game Hub</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d0d0d;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .game-button {
+      display: block;
+      width: 80%;
+      margin: 12px auto;
+      padding: 15px;
+      font-size: 20px;
+      background: #1e90ff;
+      border: none;
+      border-radius: 10px;
+      color: white;
+    }
+
+    iframe {
+      width: 95%;
+      height: 500px;
+      border: 2px solid #444;
+      border-radius: 10px;
+      margin-top: 20px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>My Game Hub</h1>
+  <p>Tap a game to play it below.</p>
+
+  <!-- Add buttons for each game -->
+
+
+  <button class="game-button" onclick="loadGame('New_Game.html')">
+    Reaction Time Game
+  </button>
+
+  <button class="game-button" onclick="loadGame('breakout.html')">
+    Breakout
+  </button>
+
+  <button class="game-button" onclick="loadGame('2048.html')">
+    2048
+  </button>
+
+<button class="game-button" onclick="loadGame('dine_game.html')">Dino Plus</button>
+    Dino Run
+  </button>
+
+  <button class="game-button" onclick="loadGame('snake.html')">
+    Snake
+  </button>
+
+  <button class="game-button" onclick="loadGame('tetris.html')">
+    Tetris
+  </button>
+
+  <button class="game-button" onclick="loadGame('flappy_bird.html')">
+    Flappy Clone 
+  </button>
+
+  <button class="game-button" onclick="loadGame('minesweeper.html')">
+    Minesweeper
+  </button>
+
+  <!-- Game viewer -->
+  <iframe id="gameFrame"></iframe>
+
+  <script>
+    function loadGame(file) {
+      document.getElementById("gameFrame").src = file;
+    }
+  </script>
+
+</body>
+</html>

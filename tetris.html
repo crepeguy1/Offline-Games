@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Simple Tetris</title>
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    text-align: center;
+    font-family: Arial;
+  }
+  canvas {
+    background: #000;
+    margin-top: 10px;
+    border: 3px solid #444;
+  }
+  .controls button {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin: 5px;
+    border-radius: 6px;
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Simple Tetris</h1>
+<h2 id="scoreText">Score: 0</h2>
+
+<canvas id="game" width="200" height="400"></canvas>
+
+<div class="controls">
+  <button onclick="moveLeft()">⬅️</button>
+  <button onclick="rotate()">⟳</button>
+  <button onclick="moveRight()">➡️</button>
+  <button onclick="drop()">⬇️</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const scoreText = document.getElementById("scoreText");
+
+const COLS = 10;
+const ROWS = 20;
+const SIZE = 20;
+
+let board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+
+const SHAPES = [
+  [],
+  [[1,1,1,1]],          // I
+  [[2,2],[2,2]],        // O
+  [[0,3,0],[3,3,3]],    // T
+  [[4,0,0],[4,4,4]],    // J
+  [[0,0,5],[5,5,5]],    // L
+  [[0,6,6],[6,6,0]],    // S
+  [[7,7,0],[0,7,7]]     // Z
+];
+
+let piece = null;
+let pos = {x: 3, y: 0};
+let dropTimer = 0;
+let speed = 500;
+let lastTime = 0;
+let gameOver = false;
+let score = 0;
+
+function updateScore(points) {
+  score += points;
+  scoreText.textContent = "Score: " + score;
+}
+
+function newPiece() {
+  const type = Math.floor(Math.random()*7)+1;
+  piece = SHAPES[type].map(r => r.slice());
+  pos.x = 3;
+  pos.y = 0;
+
+  if (collide()) {
+    alert("Game Over!");
+    gameOver = true;
+  }
+}
+
+function collide() {
+  for (let y=0; y<piece.length; y++) {
+    for (let x=0; x<piece[y].length; x++) {
+      if (piece[y][x] !== 0) {
+        let nx = pos.x + x;
+        let ny = pos.y + y;
+        if (nx < 0 || nx >= COLS || ny >= ROWS || board[ny][nx] !== 0) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function merge() {
+  for (let y=0; y<piece.length; y++) {
+    for (let x=0; x<piece[y].length; x++) {
+      if (piece[y][x] !== 0) {
+        board[pos.y+y][pos.x+x] = piece[y][x];
+      }
+    }
+  }
+}
+
+function clearLines() {
+  let linesCleared = 0;
+
+  for (let y = ROWS-1; y >= 0; y--) {
+    if (board[y].every(v => v !== 0)) {
+      board.splice(y,1);
+      board.unshift(Array(COLS).fill(0));
+      linesCleared++;
+      y++;
+    }
+  }
+
+  if (linesCleared > 0) {
+    updateScore(linesCleared * 100); // simple scoring
+  }
+}
+
+function rotate() {
+  const rotated = piece[0].map((_,i) => piece.map(r => r[i]).reverse());
+  const old = piece;
+  piece = rotated;
+  if (collide()) piece = old;
+}
+
+function moveLeft() {
+  pos.x--;
+  if (collide()) pos.x++;
+}
+
+function moveRight() {
+  pos.x++;
+  if (collide()) pos.x--;
+}
+
+function drop() {
+  pos.y++;
+  if (collide()) {
+    pos.y--;
+    merge();
+    clearLines();
+    newPiece();
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (gameOver) return;
+  if (e.key === "ArrowLeft" || e.key === "a") moveLeft();
+  if (e.key === "ArrowRight" || e.key === "d") moveRight();
+  if (e.key === "ArrowUp" || e.key === "w") rotate();
+  if (e.key === "ArrowDown" || e.key === "s") drop();
+});
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for (let y=0; y<ROWS; y++) {
+    for (let x=0; x<COLS; x++) {
+      if (board[y][x] !== 0) {
+        ctx.fillStyle = "#0f0";
+        ctx.fillRect(x*SIZE, y*SIZE, SIZE, SIZE);
+      }
+    }
+  }
+
+  if (piece) {
+    for (let y=0; y<piece.length; y++) {
+      for (let x=0; x<piece[y].length; x++) {
+        if (piece[y][x] !== 0) {
+          ctx.fillStyle = "#0f0";
+          ctx.fillRect((pos.x+x)*SIZE, (pos.y+y)*SIZE, SIZE, SIZE);
+        }
+      }
+    }
+  }
+}
+
+function update(time=0) {
+  if (gameOver) return;
+
+  const delta = time - lastTime;
+  lastTime = time;
+  dropTimer += delta;
+
+  if (dropTimer > speed) {
+    drop();
+    dropTimer = 0;
+  }
+
+  draw();
+  requestAnimationFrame(update);
+}
+
+newPiece();
+update();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Minesweeper</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 5px;
+    }
+    #info {
+      margin-bottom: 10px;
+    }
+    #board {
+      display: inline-grid;
+      grid-template-columns: repeat(10, 30px);
+      grid-auto-rows: 30px;
+      gap: 2px;
+      background: #333;
+      padding: 5px;
+      border-radius: 8px;
+    }
+    .cell {
+      width: 30px;
+      height: 30px;
+      background: #555;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cell.revealed {
+      background: #222;
+      cursor: default;
+    }
+    .cell.mine {
+      background: #b00020;
+    }
+    .cell.flagged {
+      background: #0066aa;
+    }
+    button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #1e90ff;
+      color: white;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Minesweeper</h1>
+  <div id="info">
+    <span id="status">Tap a cell to start.</span><br>
+    Mines: <span id="mineCount"></span>
+  </div>
+
+  <div id="board"></div>
+
+  <button onclick="resetGame()">Restart</button>
+
+  <script>
+    const rows = 10;
+    const cols = 10;
+    const minesTotal = 15;
+
+    let board = [];
+    let gameOver = false;
+    let cellsRevealed = 0;
+
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+    const mineCountEl = document.getElementById("mineCount");
+
+    function createBoard() {
+      board = [];
+      boardEl.innerHTML = "";
+      gameOver = false;
+      cellsRevealed = 0;
+      statusEl.textContent = "Good luck!";
+      mineCountEl.textContent = minesTotal;
+
+      // Initialize board
+      for (let r = 0; r < rows; r++) {
+        const row = [];
+        for (let c = 0; c < cols; c++) {
+          const cell = {
+            row: r,
+            col: c,
+            mine: false,
+            revealed: false,
+            flagged: false,
+            neighborMines: 0,
+            el: null
+          };
+          row.push(cell);
+        }
+        board.push(row);
+      }
+
+      // Place mines
+      let placed = 0;
+      while (placed < minesTotal) {
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
+        if (!board[r][c].mine) {
+          board[r][c].mine = true;
+          placed++;
+        }
+      }
+
+      // Count neighbors
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          board[r][c].neighborMines = countNeighborMines(r, c);
+        }
+      }
+
+      // Render cells
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cellEl = document.createElement("div");
+          cellEl.className = "cell";
+          cellEl.addEventListener("click", () => handleLeftClick(r, c));
+          cellEl.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            handleRightClick(r, c);
+          });
+          board[r][c].el = cellEl;
+          boardEl.appendChild(cellEl);
+        }
+      }
+    }
+
+    function countNeighborMines(r, c) {
+      let count = 0;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+            if (board[nr][nc].mine) count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    function handleLeftClick(r, c) {
+      if (gameOver) return;
+      const cell = board[r][c];
+      if (cell.revealed || cell.flagged) return;
+
+      revealCell(r, c);
+
+      if (cell.mine) {
+        gameOver = true;
+        statusEl.textContent = "Boom! You hit a mine.";
+        revealAllMines();
+      } else {
+        if (cell.neighborMines === 0) {
+          floodReveal(r, c);
+        }
+        checkWin();
+      }
+    }
+
+    function handleRightClick(r, c) {
+      if (gameOver) return;
+      const cell = board[r][c];
+      if (cell.revealed) return;
+
+      cell.flagged = !cell.flagged;
+      cell.el.classList.toggle("flagged", cell.flagged);
+      cell.el.textContent = cell.flagged ? "⚑" : "";
+    }
+
+    function revealCell(r, c) {
+      const cell = board[r][c];
+      if (cell.revealed) return;
+      cell.revealed = true;
+      cell.el.classList.add("revealed");
+      cellsRevealed++;
+
+      if (cell.mine) {
+        cell.el.classList.add("mine");
+        cell.el.textContent = "💣";
+      } else if (cell.neighborMines > 0) {
+        cell.el.textContent = cell.neighborMines;
+      }
+    }
+
+    function floodReveal(r, c) {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+            const neighbor = board[nr][nc];
+            if (!neighbor.revealed && !neighbor.mine && !neighbor.flagged) {
+              revealCell(nr, nc);
+              if (neighbor.neighborMines === 0) {
+                floodReveal(nr, nc);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function revealAllMines() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = board[r][c];
+          if (cell.mine) {
+            cell.el.classList.add("revealed", "mine");
+            cell.el.textContent = "💣";
+          }
+        }
+      }
+    }
+
+    function checkWin() {
+      const totalCells = rows * cols;
+      if (cellsRevealed === totalCells - minesTotal && !gameOver) {
+        gameOver = true;
+        statusEl.textContent = "You win!";
+      }
+    }
+
+    function resetGame() {
+      createBoard();
+    }
+
+    createBoard();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dino Plus</title>
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    text-align: center;
+    font-family: Arial;
+  }
+  canvas {
+    background: #000;
+    border: 3px solid #444;
+    margin-top: 10px;
+  }
+  .controls button {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    margin: 5px;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+  #shop {
+    margin-top: 10px;
+  }
+  .skin-btn {
+    background: #222;
+    color: #eee;
+    border: 1px solid #555;
+    padding: 6px 10px;
+    margin: 3px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Dino Plus</h1>
+<p>Jump: Space / ↑ / W / Button — Duck: ↓ / S</p>
+<p id="hudText">Score: 0 | Coins: 0 | High: 0</p>
+
+<canvas id="game" width="400" height="200"></canvas>
+
+<div class="controls">
+  <button onclick="jump()">JUMP</button>
+  <button onclick="toggleShop()">SHOP</button>
+</div>
+
+<div id="shop" style="display:none;">
+  <p>Shop (cost: 20 coins each)</p>
+  <div id="skins"></div>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const hudText = document.getElementById("hudText");
+const shopDiv = document.getElementById("shop");
+const skinsDiv = document.getElementById("skins");
+
+let dino = {
+  x: 40, y: 150, w: 20, h: 30,
+  vy: 0, onGround: true,
+  ducking: false,
+  frame: 0
+};
+
+let gravity = 0.6;
+
+let obstacles = [];
+let coins = [];
+let clouds = [];
+let groundSegments = [];
+
+let baseSpeed = 4;
+let speed = baseSpeed;
+let spawnTimer = 0;
+let coinTimer = 0;
+let cloudTimer = 0;
+let score = 0;
+let coinsCollected = 0;
+let gameOver = false;
+let timeAlive = 0;
+
+let highScore = parseInt(localStorage.getItem("dinoHighScore") || "0", 10);
+let totalCoins = parseInt(localStorage.getItem("dinoCoins") || "0", 10);
+
+let skins = [
+  { name: "Green", color: "#0f0", owned: true },
+  { name: "Blue", color: "#0af", owned: false },
+  { name: "Red", color: "#f33", owned: false },
+  { name: "Yellow", color: "#ff0", owned: false }
+];
+let currentSkinIndex = parseInt(localStorage.getItem("dinoSkin") || "0", 10);
+
+function saveProgress() {
+  localStorage.setItem("dinoHighScore", highScore.toString());
+  localStorage.setItem("dinoCoins", totalCoins.toString());
+  localStorage.setItem("dinoSkin", currentSkinIndex.toString());
+}
+
+function updateHUD() {
+  hudText.textContent =
+    "Score: " + Math.floor(score) +
+    " | Coins: " + totalCoins +
+    " | High: " + Math.floor(highScore);
+}
+
+function initGround() {
+  groundSegments = [];
+  for (let i = 0; i < 10; i++) {
+    groundSegments.push({ x: i * 40, y: 180, w: 40, h: 2 });
+  }
+}
+
+function initClouds() {
+  clouds = [];
+  for (let i = 0; i < 3; i++) {
+    clouds.push({
+      x: Math.random() * canvas.width,
+      y: 40 + Math.random() * 40,
+      w: 30,
+      h: 10,
+      speed: 0.5 + Math.random()
+    });
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === " " || e.key === "ArrowUp" || e.key === "w") {
+    jump();
+  }
+  if (e.key === "ArrowDown" || e.key === "s") {
+    dino.ducking = true;
+  }
+});
+
+document.addEventListener("keyup", e => {
+  if (e.key === "ArrowDown" || e.key === "s") {
+    dino.ducking = false;
+  }
+});
+
+function jump() {
+  if (dino.onGround && !gameOver) {
+    dino.vy = -10;
+    dino.onGround = false;
+  }
+}
+
+function spawnObstacle() {
+  const type = Math.random();
+  if (type < 0.6) {
+    obstacles.push({ x: canvas.width, y: 160, w: 15, h: 30, type: "cactus" });
+  } else {
+    obstacles.push({ x: canvas.width, y: 135, w: 20, h: 15, type: "bird" });
+  }
+}
+
+function spawnCoin() {
+  const y = Math.random() < 0.5 ? 140 : 110;
+  coins.push({ x: canvas.width, y, r: 6 });
+}
+
+function spawnCloud() {
+  clouds.push({
+    x: canvas.width,
+    y: 40 + Math.random() * 40,
+    w: 30,
+    h: 10,
+    speed: 0.5 + Math.random()
+  });
+}
+
+function update() {
+  if (gameOver) return;
+
+  timeAlive += 1;
+  speed = baseSpeed + Math.min(6, timeAlive / 300);
+
+  dino.vy += gravity;
+  dino.y += dino.vy;
+
+  if (dino.y >= 150) {
+    dino.y = 150;
+    dino.vy = 0;
+    dino.onGround = true;
+  }
+
+  if (dino.ducking) {
+    dino.h = 20;
+  } else {
+    dino.h = 30;
+  }
+
+  spawnTimer++;
+  if (spawnTimer > 70) {
+    spawnObstacle();
+    spawnTimer = 0;
+  }
+
+  coinTimer++;
+  if (coinTimer > 120) {
+    spawnCoin();
+    coinTimer = 0;
+  }
+
+  cloudTimer++;
+  if (cloudTimer > 150) {
+    spawnCloud();
+    cloudTimer = 0;
+  }
+
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    obstacles[i].x -= speed;
+    if (obstacles[i].x + obstacles[i].w < 0) {
+      obstacles.splice(i, 1);
+      score += 5;
+    }
+  }
+
+  for (let i = coins.length - 1; i >= 0; i--) {
+    coins[i].x -= speed;
+    if (coins[i].x + coins[i].r < 0) {
+      coins.splice(i, 1);
+    }
+  }
+
+  for (let i = clouds.length - 1; i >= 0; i--) {
+    clouds[i].x -= clouds[i].speed;
+    if (clouds[i].x + clouds[i].w < 0) {
+      clouds.splice(i, 1);
+    }
+  }
+
+  for (let i = groundSegments.length - 1; i >= 0; i--) {
+    groundSegments[i].x -= speed;
+    if (groundSegments[i].x + groundSegments[i].w < 0) {
+      groundSegments[i].x = canvas.width;
+    }
+  }
+
+  for (let obs of obstacles) {
+    if (
+      dino.x < obs.x + obs.w &&
+      dino.x + dino.w > obs.x &&
+      dino.y < obs.y + obs.h &&
+      dino.y + dino.h > obs.y
+    ) {
+      gameOver = true;
+      if (score > highScore) highScore = score;
+      saveProgress();
+      updateHUD();
+      alert("Game Over! Score: " + Math.floor(score) + " | Coins: " + totalCoins);
+    }
+  }
+
+  for (let i = coins.length - 1; i >= 0; i--) {
+    let c = coins[i];
+    if (
+      dino.x < c.x + c.r &&
+      dino.x + dino.w > c.x - c.r &&
+      dino.y < c.y + c.r &&
+      dino.y + dino.h > c.y - c.r
+    ) {
+      coinsCollected++;
+      totalCoins++;
+      coins.splice(i, 1);
+    }
+  }
+
+  score += 0.1;
+  dino.frame = (dino.frame + 1) % 20;
+
+  if (score > highScore) {
+    highScore = score;
+  }
+
+  saveProgress();
+  updateHUD();
+}
+
+function drawClouds() {
+  ctx.fillStyle = "#555";
+  for (let c of clouds) {
+    ctx.fillRect(c.x, c.y, c.w, c.h);
+  }
+}
+
+function drawGround() {
+  ctx.fillStyle = "#0f0";
+  for (let g of groundSegments) {
+    ctx.fillRect(g.x, g.y, g.w, g.h);
+  }
+}
+
+function drawDino() {
+  const skin = skins[currentSkinIndex];
+  ctx.fillStyle = skin.color;
+
+  let legOffset = dino.frame < 10 ? 0 : 3;
+
+  if (dino.ducking) {
+    ctx.fillRect(dino.x, dino.y + 10, dino.w + 10, 20);
+  } else {
+    ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
+    ctx.fillRect(dino.x + 4, dino.y - 5, 12, 5);
+    ctx.fillRect(dino.x + 3, dino.y + dino.h, 5, 5 + legOffset);
+    ctx.fillRect(dino.x + 12, dino.y + dino.h, 5, 5 - legOffset);
+  }
+}
+
+function drawObstacles() {
+  ctx.fillStyle = "#0f0";
+  for (let obs of obstacles) {
+    ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+  }
+}
+
+function drawCoins() {
+  ctx.fillStyle = "#ff0";
+  for (let c of coins) {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawClouds();
+  drawGround();
+  drawDino();
+  drawObstacles();
+  drawCoins();
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function toggleShop() {
+  shopDiv.style.display = shopDiv.style.display === "none" ? "block" : "none";
+  renderShop();
+}
+
+function renderShop() {
+  skinsDiv.innerHTML = "";
+  skins.forEach((skin, index) => {
+    const btn = document.createElement("button");
+    btn.className = "skin-btn";
+    btn.style.borderColor = skin.color;
+    let label = skin.name;
+    if (!skin.owned) label += " (20c)";
+    if (index === currentSkinIndex) label += " [Equipped]";
+    btn.textContent = label;
+    btn.onclick = () => {
+      if (!skin.owned) {
+        if (totalCoins >= 20) {
+          totalCoins -= 20;
+          skin.owned = true;
+        } else {
+          alert("Not enough coins!");
+          return;
+        }
+      }
+      currentSkinIndex = index;
+      saveProgress();
+      updateHUD();
+      renderShop();
+    };
+    skinsDiv.appendChild(btn);
+  });
+}
+
+initGround();
+initClouds();
+updateHUD();
+renderShop();
+loop();
+</script>
+
+</body>
+</html>
