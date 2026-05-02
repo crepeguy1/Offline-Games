@@ -2,53 +2,62 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Game Hub</title>
+  <title>Game Hub</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #0d0d0d;
-      color: white;
+      background-color: white;
+      color: black;
       text-align: center;
       padding: 20px;
     }
 
     h1 {
-      margin-bottom: 10px;
+      color: blue;
+      font-size: 36px;
+    }
+
+    p {
+      font-size: 18px;
     }
 
     nav {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
       max-width: 800px;
-      margin: 0 auto 20px;
+      margin: 0 auto;
     }
 
     .game-button {
       padding: 15px;
-      font-size: 20px;
-      background: #1e90ff;
-      border: none;
-      border-radius: 10px;
-      color: white;
+      font-size: 16px;
+      background-color: lightblue;
+      border: 1px solid blue;
+      color: black;
       cursor: pointer;
-      transition: background 0.3s;
+      width: 200px;
     }
 
-    .game-button:hover, .game-button:focus {
-      background: #4169e1;
+    .game-button:hover {
+      background-color: blue;
+      color: white;
+    }
+
+    #search {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid black;
+      width: 200px;
+      margin-bottom: 20px;
     }
 
     iframe {
-      width: 95%;
-      max-width: 800px;
+      width: 800px;
       height: 500px;
-      border: 2px solid #444;
-      border-radius: 10px;
+      border: 1px solid black;
       margin-top: 20px;
-      background: white;
-      display: none;
     }
 
     #loading {
@@ -60,25 +69,30 @@
     #back-button {
       display: none;
       margin-top: 10px;
-      padding: 10px 20px;
-      background: #ff4500;
-      border: none;
-      border-radius: 5px;
+      padding: 10px;
+      background-color: red;
       color: white;
+      border: none;
       cursor: pointer;
     }
 
-    #back-button:hover {
-      background: #dc143c;
+    footer {
+      margin-top: 20px;
+      font-size: 14px;
+      color: gray;
     }
   </style>
 </head>
 <body>
 
   <h1>My Game Hub</h1>
-  <p>Tap a game to play it below.</p>
+  <p>Click on a game to play it!</p>
 
-  <nav>
+  <!-- search box -->
+  <input type="text" id="search" placeholder="Search games...">
+
+  <!-- game buttons -->
+  <nav id="game-nav">
     <button class="game-button" onclick="loadGame('New_Game.html')" aria-label="Play Reaction Time Game">
       Reaction Time Game
     </button>
@@ -110,15 +124,71 @@
     <button class="game-button" onclick="loadGame('minesweeper.html')" aria-label="Play Minesweeper Game">
       Minesweeper
     </button>
+
+    <button class="game-button" onclick="loadGame('tic_tac_toe.html')" aria-label="Play Tic-Tac-Toe Game">
+      Tic-Tac-Toe
+    </button>
+
+    <button class="game-button" onclick="loadGame('rock_paper_scissors.html')" aria-label="Play Rock Paper Scissors Game">
+      Rock Paper Scissors
+    </button>
+
+    <button class="game-button" onclick="loadGame('memory_game.html')" aria-label="Play Memory Game">
+      Memory Game
+    </button>
+
+    <button class="game-button" onclick="loadGame('pong.html')" aria-label="Play Pong Game">
+      Pong
+    </button>
+
+    <button class="game-button" onclick="loadGame('simon_says.html')" aria-label="Play Simon Says Game">
+      Simon Says
+    </button>
+
+    <button class="game-button" onclick="loadGame('whack_a_mole.html')" aria-label="Play Whack-a-Mole Game">
+      Whack-a-Mole
+    </button>
+
+    <button class="game-button" onclick="loadGame('connect_four.html')" aria-label="Play Connect Four Game">
+      Connect Four
+    </button>
+
+    <button class="game-button" onclick="loadGame('frogger.html')" aria-label="Play Frogger Game">
+      Frogger
+    </button>
+
+    <button class="game-button" onclick="loadGame('space_invaders.html')" aria-label="Play Space Invaders Game">
+      Space Invaders
+    </button>
+
+    <button class="game-button" onclick="loadGame('quiz_game.html')" aria-label="Play Quiz Game">
+      Quiz Game
+    </button>
   </nav>
 
   <div id="loading">Loading game...</div>
+  <!-- back button -->
   <button id="back-button" onclick="backToHub()">Back to Hub</button>
 
-  <!-- Game viewer -->
+  <!-- iframe for games -->
   <iframe id="gameFrame"></iframe>
 
+  <!-- javascript -->
   <script>
+    // search function
+    const searchInput = document.getElementById('search');
+    const gameNav = document.getElementById('game-nav');
+    const buttons = gameNav.querySelectorAll('.game-button');
+
+    searchInput.addEventListener('input', function() {
+      const query = this.value.toLowerCase();
+      buttons.forEach(button => {
+        const text = button.textContent.toLowerCase();
+        button.style.display = text.includes(query) ? 'block' : 'none';
+      });
+    });
+
+    // load game function
     function loadGame(file) {
       const iframe = document.getElementById("gameFrame");
       const loading = document.getElementById("loading");
@@ -136,6 +206,7 @@
       };
     }
 
+    // back to hub
     function backToHub() {
       const iframe = document.getElementById("gameFrame");
       const loading = document.getElementById("loading");
@@ -147,6 +218,10 @@
       backBtn.style.display = "none";
     }
   </script>
+
+  <footer>
+    <p>Enjoy these classic games! Built with HTML.</p>
+  </footer>
 
 </body>
 </html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        .choices {
+            display: flex;
+            gap: 20px;
+            margin: 20px;
+        }
+        .choice {
+            padding: 20px;
+            font-size: 48px;
+            background-color: white;
+            border: 2px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .choice:hover {
+            background-color: #e0e0e0;
+        }
+        .results {
+            text-align: center;
+            margin: 20px;
+        }
+        .result {
+            font-size: 24px;
+            margin: 10px;
+        }
+        .score {
+            font-size: 20px;
+            margin: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rock Paper Scissors</h1>
+    <div class="choices">
+        <div class="choice" id="rock">🪨</div>
+        <div class="choice" id="paper">📄</div>
+        <div class="choice" id="scissors">✂️</div>
+    </div>
+    <div class="results">
+        <div class="result" id="player-choice">Your choice: </div>
+        <div class="result" id="computer-choice">Computer's choice: </div>
+        <div class="result" id="game-result"></div>
+        <div class="score" id="score">Score - You: 0, Computer: 0</div>
+    </div>
+    <button id="reset">Reset Score</button>
+
+    <script>
+        const choices = document.querySelectorAll('.choice');
+        const playerChoiceDisplay = document.getElementById('player-choice');
+        const computerChoiceDisplay = document.getElementById('computer-choice');
+        const gameResultDisplay = document.getElementById('game-result');
+        const scoreDisplay = document.getElementById('score');
+        const resetButton = document.getElementById('reset');
+
+        let playerScore = 0;
+        let computerScore = 0;
+
+        const choiceMap = {
+            rock: '🪨',
+            paper: '📄',
+            scissors: '✂️'
+        };
+
+        function getComputerChoice() {
+            const choices = ['rock', 'paper', 'scissors'];
+            return choices[Math.floor(Math.random() * choices.length)];
+        }
+
+        function determineWinner(playerChoice, computerChoice) {
+            if (playerChoice === computerChoice) {
+                return 'tie';
+            }
+            if (
+                (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                (playerChoice === 'paper' && computerChoice === 'rock') ||
+                (playerChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                return 'player';
+            }
+            return 'computer';
+        }
+
+        function updateScore(winner) {
+            if (winner === 'player') {
+                playerScore++;
+            } else if (winner === 'computer') {
+                computerScore++;
+            }
+            scoreDisplay.textContent = `Score - You: ${playerScore}, Computer: ${computerScore}`;
+        }
+
+        function playGame(playerChoice) {
+            const computerChoice = getComputerChoice();
+            const winner = determineWinner(playerChoice, computerChoice);
+
+            playerChoiceDisplay.textContent = `Your choice: ${choiceMap[playerChoice]}`;
+            computerChoiceDisplay.textContent = `Computer's choice: ${choiceMap[computerChoice]}`;
+
+            if (winner === 'tie') {
+                gameResultDisplay.textContent = 'It\'s a tie!';
+            } else if (winner === 'player') {
+                gameResultDisplay.textContent = 'You win!';
+            } else {
+                gameResultDisplay.textContent = 'Computer wins!';
+            }
+
+            updateScore(winner);
+        }
+
+        function resetScore() {
+            playerScore = 0;
+            computerScore = 0;
+            scoreDisplay.textContent = `Score - You: ${playerScore}, Computer: ${computerScore}`;
+            playerChoiceDisplay.textContent = 'Your choice: ';
+            computerChoiceDisplay.textContent = 'Computer's choice: ';
+            gameResultDisplay.textContent = '';
+        }
+
+        choices.forEach(choice => {
+            choice.addEventListener('click', () => {
+                playGame(choice.id);
+            });
+        });
+
+        resetButton.addEventListener('click', resetScore);
+    </script>
+</body>
+</html>

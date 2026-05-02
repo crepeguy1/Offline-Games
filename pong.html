@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: black;
+        }
+        .score {
+            font-size: 24px;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pong</h1>
+    <div class="score" id="score">Player: 0 - Computer: 0</div>
+    <canvas id="pong" width="800" height="400"></canvas>
+    <div class="controls">
+        <p>Use mouse to control paddle</p>
+        <button id="restart">Restart Game</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('pong');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const restartButton = document.getElementById('restart');
+
+        let playerScore = 0;
+        let computerScore = 0;
+
+        // Ball
+        let ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            velocityX: 5,
+            velocityY: 5,
+            speed: 7
+        };
+
+        // Paddles
+        const paddleWidth = 10;
+        const paddleHeight = 100;
+
+        let player = {
+            x: 0,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            score: 0
+        };
+
+        let computer = {
+            x: canvas.width - paddleWidth,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            score: 0
+        };
+
+        // Mouse position
+        let mouseY = 0;
+
+        canvas.addEventListener('mousemove', (e) => {
+            let rect = canvas.getBoundingClientRect();
+            mouseY = e.clientY - rect.top - player.height / 2;
+            player.y = mouseY;
+        });
+
+        function drawRect(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, w, h);
+        }
+
+        function drawCircle(x, y, r, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawText(text, x, y, color) {
+            ctx.fillStyle = color;
+            ctx.font = '45px Arial';
+            ctx.fillText(text, x, y);
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.velocityX = -ball.velocityX;
+            ball.speed = 7;
+        }
+
+        function collision(b, p) {
+            p.top = p.y;
+            p.bottom = p.y + p.height;
+            p.left = p.x;
+            p.right = p.x + p.width;
+
+            b.top = b.y - b.radius;
+            b.bottom = b.y + b.radius;
+            b.left = b.x - b.radius;
+            b.right = b.x + b.radius;
+
+            return p.left < b.right && p.top < b.bottom && p.right > b.left && p.bottom > b.top;
+        }
+
+        function update() {
+            // Ball movement
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+
+            // Ball collision with top and bottom walls
+            if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+                ball.velocityY = -ball.velocityY;
+            }
+
+            // Ball collision with paddles
+            let playerPaddle = (ball.x < canvas.width / 2) ? player : computer;
+
+            if (collision(ball, playerPaddle)) {
+                let collidePoint = (ball.y - (playerPaddle.y + playerPaddle.height / 2));
+                collidePoint = collidePoint / (playerPaddle.height / 2);
+
+                let angleRad = (Math.PI / 4) * collidePoint;
+
+                let direction = (ball.x < canvas.width / 2) ? 1 : -1;
+                ball.velocityX = direction * ball.speed * Math.cos(angleRad);
+                ball.velocityY = ball.speed * Math.sin(angleRad);
+
+                ball.speed += 0.1;
+            }
+
+            // Computer paddle movement
+            computer.y += ((ball.y - (computer.y + computer.height / 2))) * 0.1;
+
+            // Scoring
+            if (ball.x - ball.radius < 0) {
+                computerScore++;
+                resetBall();
+            } else if (ball.x + ball.radius > canvas.width) {
+                playerScore++;
+                resetBall();
+            }
+
+            scoreDisplay.textContent = `Player: ${playerScore} - Computer: ${computerScore}`;
+        }
+
+        function render() {
+            drawRect(0, 0, canvas.width, canvas.height, 'black');
+            drawRect(player.x, player.y, player.width, player.height, 'white');
+            drawRect(computer.x, computer.y, computer.width, computer.height, 'white');
+            drawCircle(ball.x, ball.y, ball.radius, 'white');
+        }
+
+        function game() {
+            update();
+            render();
+        }
+
+        function restartGame() {
+            playerScore = 0;
+            computerScore = 0;
+            resetBall();
+            scoreDisplay.textContent = `Player: ${playerScore} - Computer: ${computerScore}`;
+        }
+
+        restartButton.addEventListener('click', restartGame);
+
+        setInterval(game, 1000 / 50);
+    </script>
+</body>
+</html>

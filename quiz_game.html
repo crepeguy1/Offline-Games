@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        .quiz-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option {
+            padding: 10px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #d0d0d0;
+        }
+        .option.correct {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .option.incorrect {
+            background-color: #f44336;
+            color: white;
+        }
+        .score {
+            font-size: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .next-button {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz Game</h1>
+    <div class="quiz-container">
+        <div class="question" id="question">Question will appear here</div>
+        <div class="options" id="options"></div>
+        <div class="score" id="score">Score: 0/0</div>
+        <button id="next" class="next-button">Next Question</button>
+        <button id="restart">Restart Quiz</button>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correct: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correct: 1
+            },
+            {
+                question: "What is 2 + 2?",
+                options: ["3", "4", "5", "6"],
+                correct: 1
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: ["Van Gogh", "Picasso", "Da Vinci", "Michelangelo"],
+                correct: 2
+            },
+            {
+                question: "What is the largest ocean on Earth?",
+                options: ["Atlantic", "Indian", "Arctic", "Pacific"],
+                correct: 3
+            },
+            {
+                question: "Which programming language is this quiz written in?",
+                options: ["Python", "Java", "JavaScript", "C++"],
+                correct: 2
+            },
+            {
+                question: "What year was the first iPhone released?",
+                options: ["2005", "2006", "2007", "2008"],
+                correct: 2
+            },
+            {
+                question: "Which element has the chemical symbol 'O'?",
+                options: ["Gold", "Oxygen", "Silver", "Iron"],
+                correct: 1
+            },
+            {
+                question: "What is the smallest country in the world?",
+                options: ["Monaco", "Nauru", "Vatican City", "San Marino"],
+                correct: 2
+            },
+            {
+                question: "Which sport is known as 'America's Pastime'?",
+                options: ["Basketball", "Football", "Baseball", "Soccer"],
+                correct: 2
+            }
+        ];
+
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const scoreElement = document.getElementById('score');
+        const nextButton = document.getElementById('next');
+        const restartButton = document.getElementById('restart');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function loadQuestion() {
+            answered = false;
+            nextButton.style.display = 'none';
+
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.textContent = currentQuestion.question;
+
+            optionsElement.innerHTML = '';
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.classList.add('option');
+                button.textContent = option;
+                button.addEventListener('click', () => selectOption(index));
+                optionsElement.appendChild(button);
+            });
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+
+            answered = true;
+            const currentQuestion = questions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+
+            options.forEach((option, index) => {
+                if (index === currentQuestion.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    option.classList.add('incorrect');
+                }
+            });
+
+            if (selectedIndex === currentQuestion.correct) {
+                score++;
+            }
+
+            scoreElement.textContent = `Score: ${score}/${currentQuestionIndex + 1}`;
+            nextButton.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showFinalScore();
+            }
+        }
+
+        function showFinalScore() {
+            questionElement.textContent = `Quiz Complete! Final Score: ${score}/${questions.length}`;
+            optionsElement.innerHTML = '';
+            nextButton.style.display = 'none';
+            scoreElement.textContent = '';
+        }
+
+        function restartQuiz() {
+            shuffleArray(questions);
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+            scoreElement.textContent = `Score: ${score}/${currentQuestionIndex + 1}`;
+        }
+
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', restartQuiz);
+
+        shuffleArray(questions);
+        loadQuestion();
+    </script>
+</body>
+</html>

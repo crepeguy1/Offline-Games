@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+            gap: 10px;
+            margin: 20px;
+        }
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #4CAF50;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+            user-select: none;
+        }
+        .card.flipped {
+            background-color: white;
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            background-color: #45a049;
+            cursor: not-allowed;
+        }
+        .status {
+            font-size: 24px;
+            margin: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Game</h1>
+    <div class="status" id="status">Matches found: 0/8</div>
+    <div class="game-board" id="game-board"></div>
+    <button id="restart">Restart Game</button>
+
+    <script>
+        const gameBoard = document.getElementById('game-board');
+        const status = document.getElementById('status');
+        const restartButton = document.getElementById('restart');
+
+        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let lockBoard = false;
+
+        function createBoard() {
+            const cardValues = [...emojis, ...emojis];
+            shuffleArray(cardValues);
+
+            gameBoard.innerHTML = '';
+            cards = [];
+
+            cardValues.forEach((value, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.value = value;
+                card.dataset.index = index;
+                card.addEventListener('click', flipCard);
+                gameBoard.appendChild(card);
+                cards.push(card);
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === flippedCards[0]) return;
+
+            this.classList.add('flipped');
+            this.textContent = this.dataset.value;
+
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            lockBoard = true;
+
+            const [card1, card2] = flippedCards;
+
+            if (card1.dataset.value === card2.dataset.value) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                status.textContent = `Matches found: ${matchedPairs}/8`;
+                flippedCards = [];
+                lockBoard = false;
+
+                if (matchedPairs === 8) {
+                    setTimeout(() => {
+                        alert('Congratulations! You won!');
+                    }, 500);
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    card1.textContent = '';
+                    card2.textContent = '';
+                    flippedCards = [];
+                    lockBoard = false;
+                }, 1000);
+            }
+        }
+
+        function restartGame() {
+            matchedPairs = 0;
+            flippedCards = [];
+            lockBoard = false;
+            status.textContent = `Matches found: 0/8`;
+            createBoard();
+        }
+
+        restartButton.addEventListener('click', restartGame);
+
+        createBoard();
+    </script>
+</body>
+</html>

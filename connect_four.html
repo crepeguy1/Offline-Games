@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Four</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 60px);
+            grid-template-rows: repeat(6, 60px);
+            gap: 5px;
+            margin: 20px;
+            background-color: #0000ff;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .cell.red {
+            background-color: #ff0000;
+        }
+        .cell.yellow {
+            background-color: #ffff00;
+        }
+        .column {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        .status {
+            font-size: 24px;
+            margin: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Connect Four</h1>
+    <div class="status" id="status">Player Red's turn</div>
+    <div class="board" id="board"></div>
+    <button id="restart">Restart Game</button>
+
+    <script>
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const restartButton = document.getElementById('restart');
+
+        let currentPlayer = 'red';
+        let gameActive = true;
+        let gameBoard = Array(6).fill().map(() => Array(7).fill(null));
+
+        function createBoard() {
+            board.innerHTML = '';
+            for (let col = 0; col < 7; col++) {
+                const column = document.createElement('div');
+                column.classList.add('column');
+                column.dataset.col = col;
+                column.addEventListener('click', handleColumnClick);
+
+                for (let row = 0; row < 6; row++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    column.appendChild(cell);
+                }
+
+                board.appendChild(column);
+            }
+        }
+
+        function handleColumnClick(e) {
+            if (!gameActive) return;
+
+            const col = parseInt(e.currentTarget.dataset.col);
+            const cells = e.currentTarget.querySelectorAll('.cell');
+
+            for (let row = 5; row >= 0; row--) {
+                if (!gameBoard[row][col]) {
+                    gameBoard[row][col] = currentPlayer;
+                    cells[row].classList.add(currentPlayer);
+
+                    if (checkWin(row, col)) {
+                        status.textContent = `Player ${currentPlayer.toUpperCase()} wins!`;
+                        gameActive = false;
+                        return;
+                    }
+
+                    if (checkDraw()) {
+                        status.textContent = 'It\'s a draw!';
+                        gameActive = false;
+                        return;
+                    }
+
+                    currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+                    status.textContent = `Player ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s turn`;
+                    return;
+                }
+            }
+        }
+
+        function checkWin(row, col) {
+            const directions = [
+                [0, 1], [1, 0], [1, 1], [1, -1] // horizontal, vertical, diagonal
+            ];
+
+            for (let [dr, dc] of directions) {
+                let count = 1;
+
+                // Check positive direction
+                let r = row + dr;
+                let c = col + dc;
+                while (r >= 0 && r < 6 && c >= 0 && c < 7 && gameBoard[r][c] === currentPlayer) {
+                    count++;
+                    r += dr;
+                    c += dc;
+                }
+
+                // Check negative direction
+                r = row - dr;
+                c = col - dc;
+                while (r >= 0 && r < 6 && c >= 0 && c < 7 && gameBoard[r][c] === currentPlayer) {
+                    count++;
+                    r -= dr;
+                    c -= dc;
+                }
+
+                if (count >= 4) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function checkDraw() {
+            return gameBoard.every(row => row.every(cell => cell !== null));
+        }
+
+        function restartGame() {
+            gameBoard = Array(6).fill().map(() => Array(7).fill(null));
+            currentPlayer = 'red';
+            gameActive = true;
+            status.textContent = `Player ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s turn`;
+            createBoard();
+        }
+
+        restartButton.addEventListener('click', restartGame);
+
+        createBoard();
+    </script>
+</body>
+</html>
