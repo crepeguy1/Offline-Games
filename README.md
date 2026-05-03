@@ -25,11 +25,17 @@ Hey! This is a bunch of fun games I made that you can play right in your browser
 
 ## How to Play
 
-Open Game_Hub.html in your browser, click a game, play! Use the search box to find games. Click back to go to menu.
+Open index.html in your browser, click a game, play! Use the search box to find games. Click back to go to menu.
+
+## Play Online
+
+Visit: https://crepeguy1.github.io/Offline-Games/
+
+All games work in your browser - no downloads needed!
 
 ## Files
 
-- Game_Hub.html = main page
+- index.html = main page (was Game_Hub.html)
 - games/ = all the games are in here
 - README.md = this file
 
