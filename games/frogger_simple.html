@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Frogger (Simple)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #gameArea {
+      position: relative;
+      width: 400px;
+      height: 500px;
+      background-color: #228b22;
+      margin: 20px auto;
+      border: 2px solid #333;
+      overflow: hidden;
+    }
+    #frog {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: #32cd32;
+      border-radius: 50%;
+      bottom: 10px;
+      left: 185px;
+    }
+    .car {
+      position: absolute;
+      width: 40px;
+      height: 25px;
+      background-color: #ff0000;
+      border-radius: 3px;
+    }
+    .log {
+      position: absolute;
+      height: 25px;
+      background-color: #8b4513;
+      border-radius: 12px;
+    }
+    .log.short {
+      width: 80px;
+    }
+    .log.medium {
+      width: 120px;
+    }
+    .log.long {
+      width: 160px;
+    }
+    .water {
+      position: absolute;
+      width: 100%;
+      height: 150px;
+      background-color: #4169e1;
+      top: 100px;
+    }
+    .road {
+      position: absolute;
+      width: 100%;
+      height: 150px;
+      background-color: #333;
+      top: 250px;
+    }
+    .safe {
+      position: absolute;
+      width: 100%;
+      height: 50px;
+      background-color: #90ee90;
+      top: 400px;
+    }
+    .goal {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background-color: #ffd700;
+      border-radius: 50%;
+      top: 5px;
+    }
+    .goal.filled {
+      background-color: #32cd32;
+    }
+    .score {
+      font-size: 24px;
+      margin: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .controls {
+      margin: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Frogger (Simple)</h1>
+  <div class="score">Score: <span id="score">0</span> | Lives: <span id="lives">3</span></div>
+  <div id="gameArea">
+    <div class="water"></div>
+    <div class="road"></div>
+    <div class="safe"></div>
+    <div id="frog"></div>
+  </div>
+  <div class="controls">
+    Arrow keys to move<br>
+    <button onclick="moveFrog('up')">↑</button>
+    <button onclick="moveFrog('down')">↓</button>
+    <button onclick="moveFrog('left')">←</button>
+    <button onclick="moveFrog('right')">→</button>
+  </div>
+  <button onclick="resetGame()">Restart</button>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const frog = document.getElementById('frog');
+    const scoreElement = document.getElementById('score');
+    const livesElement = document.getElementById('lives');
+
+    let frogX = 185;
+    let frogY = 460;
+    let score = 0;
+    let lives = 3;
+    let gameRunning = true;
+    let cars = [];
+    let logs = [];
+    let goals = [];
+
+    function createGoals() {
+      goals = [];
+      for (let i = 0; i < 5; i++) {
+        const goal = document.createElement('div');
+        goal.className = 'goal';
+        goal.style.left = (i * 80 + 10) + 'px';
+        gameArea.appendChild(goal);
+        goals.push(goal);
+      }
+    }
+
+    function createCar(y, speed, direction) {
+      const car = document.createElement('div');
+      car.className = 'car';
+      car.style.top = y + 'px';
+      car.style.left = direction === 'left' ? '400px' : '-40px';
+      car.speed = speed;
+      car.direction = direction;
+      gameArea.appendChild(car);
+      cars.push(car);
+    }
+
+    function createLog(y, speed, direction, size) {
+      const log = document.createElement('div');
+      log.className = 'log ' + size;
+      log.style.top = y + 'px';
+      log.style.left = direction === 'left' ? '400px' : '-160px';
+      log.speed = speed;
+      log.direction = direction;
+      gameArea.appendChild(log);
+      logs.push(log);
+    }
+
+    function moveCars() {
+      cars.forEach((car, index) => {
+        const currentLeft = parseInt(car.style.left);
+        const newLeft = currentLeft + (car.direction === 'left' ? -car.speed : car.speed);
+        car.style.left = newLeft + 'px';
+
+        // Remove off-screen cars
+        if ((car.direction === 'left' && newLeft < -40) ||
+            (car.direction === 'right' && newLeft > 400)) {
+          gameArea.removeChild(car);
+          cars.splice(index, 1);
+        }
+      });
+    }
+
+    function moveLogs() {
+      logs.forEach((log, index) => {
+        const currentLeft = parseInt(log.style.left);
+        const newLeft = currentLeft + (log.direction === 'left' ? -log.speed : log.speed);
+        log.style.left = newLeft + 'px';
+
+        // Move frog with log if on it
+        if (frogY >= parseInt(log.style.top) - 5 && frogY <= parseInt(log.style.top) + 25 &&
+            frogX >= newLeft && frogX <= newLeft + parseInt(log.style.width || 80)) {
+          frogX += (log.direction === 'left' ? -log.speed : log.speed);
+          frog.style.left = frogX + 'px';
+        }
+
+        // Remove off-screen logs
+        if ((log.direction === 'left' && newLeft < -160) ||
+            (log.direction === 'right' && newLeft > 400)) {
+          gameArea.removeChild(log);
+          logs.splice(index, 1);
+        }
+      });
+    }
+
+    function moveFrog(direction) {
+      if (!gameRunning) return;
+
+      const step = 40;
+      switch(direction) {
+        case 'up': frogY = Math.max(0, frogY - step); break;
+        case 'down': frogY = Math.min(460, frogY + step); break;
+        case 'left': frogX = Math.max(0, frogX - step); break;
+        case 'right': frogX = Math.min(370, frogX + step); break;
+      }
+
+      frog.style.left = frogX + 'px';
+      frog.style.top = frogY + 'px';
+
+      checkCollisions();
+      checkGoal();
+    }
+
+    function checkCollisions() {
+      // Check car collisions
+      cars.forEach(car => {
+        const carLeft = parseInt(car.style.left);
+        const carTop = parseInt(car.style.top);
+        if (frogX < carLeft + 40 && frogX + 30 > carLeft &&
+            frogY < carTop + 25 && frogY + 30 > carTop) {
+          loseLife();
+        }
+      });
+
+      // Check water collision (frog must be on log)
+      if (frogY < 250 && frogY > 100) {
+        let onLog = false;
+        logs.forEach(log => {
+          const logLeft = parseInt(log.style.left);
+          const logTop = parseInt(log.style.top);
+          const logWidth = parseInt(log.style.width || 80);
+          if (frogX >= logLeft && frogX <= logLeft + logWidth &&
+              frogY >= logTop - 5 && frogY <= logTop + 25) {
+            onLog = true;
+          }
+        });
+        if (!onLog) {
+          loseLife();
+        }
+      }
+    }
+
+    function checkGoal() {
+      if (frogY <= 40) {
+        goals.forEach((goal, index) => {
+          const goalLeft = parseInt(goal.style.left);
+          if (frogX >= goalLeft && frogX <= goalLeft + 40 && !goal.classList.contains('filled')) {
+            goal.classList.add('filled');
+            score += 100;
+            scoreElement.textContent = score;
+            resetFrog();
+            return;
+          }
+        });
+        // If reached top but not on goal, lose life
+        loseLife();
+      }
+    }
+
+    function loseLife() {
+      lives--;
+      livesElement.textContent = lives;
+      if (lives <= 0) {
+        gameOver();
+      } else {
+        resetFrog();
+      }
+    }
+
+    function resetFrog() {
+      frogX = 185;
+      frogY = 460;
+      frog.style.left = frogX + 'px';
+      frog.style.top = frogY + 'px';
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      alert(`Game Over! Final Score: ${score}`);
+    }
+
+    function resetGame() {
+      // Clear existing elements
+      cars.forEach(car => { if (car.parentNode) gameArea.removeChild(car); });
+      logs.forEach(log => { if (log.parentNode) gameArea.removeChild(log); });
+      goals.forEach(goal => { if (goal.parentNode) gameArea.removeChild(goal); });
+
+      cars = [];
+      logs = [];
+      score = 0;
+      lives = 3;
+      scoreElement.textContent = score;
+      livesElement.textContent = lives;
+      gameRunning = true;
+
+      resetFrog();
+      createGoals();
+
+      // Create initial obstacles
+      createCar(275, 3, 'left');
+      createCar(300, 2, 'right');
+      createCar(325, 4, 'left');
+      createLog(125, 2, 'right', 'medium');
+      createLog(150, 3, 'left', 'long');
+      createLog(175, 1, 'right', 'short');
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowUp': moveFrog('up'); break;
+        case 'ArrowDown': moveFrog('down'); break;
+        case 'ArrowLeft': moveFrog('left'); break;
+        case 'ArrowRight': moveFrog('right'); break;
+      }
+    });
+
+    function gameLoop() {
+      if (!gameRunning) return;
+
+      moveCars();
+      moveLogs();
+
+      // Add new obstacles occasionally
+      if (Math.random() < 0.02) {
+        const lane = Math.floor(Math.random() * 3);
+        if (lane === 0) {
+          createCar(275 + Math.floor(Math.random() * 3) * 25, 2 + Math.random() * 3,
+                   Math.random() < 0.5 ? 'left' : 'right');
+        } else {
+          createLog(125 + lane * 25, 1 + Math.random() * 3,
+                   Math.random() < 0.5 ? 'left' : 'right',
+                   ['short', 'medium', 'long'][Math.floor(Math.random() * 3)]);
+        }
+      }
+
+      setTimeout(gameLoop, 50);
+    }
+
+    resetGame();
+    gameLoop();
+  </script>
+</body>
+</html>

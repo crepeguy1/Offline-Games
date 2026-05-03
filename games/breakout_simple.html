@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Breakout (Simple)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #gameArea {
+      position: relative;
+      width: 400px;
+      height: 300px;
+      background-color: #000;
+      margin: 20px auto;
+      border: 2px solid #333;
+      overflow: hidden;
+    }
+    #ball {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      border-radius: 50%;
+      top: 250px;
+      left: 190px;
+    }
+    #paddle {
+      position: absolute;
+      width: 80px;
+      height: 10px;
+      background-color: #4CAF50;
+      bottom: 10px;
+      left: 160px;
+    }
+    .brick {
+      position: absolute;
+      width: 38px;
+      height: 20px;
+      background-color: #f44336;
+      border: 1px solid #333;
+    }
+    .score {
+      font-size: 24px;
+      margin: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .controls {
+      margin: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Breakout (Simple)</h1>
+  <div class="score">Score: <span id="score">0</span></div>
+  <div id="gameArea">
+    <div id="ball"></div>
+    <div id="paddle"></div>
+  </div>
+  <div class="controls">
+    Use arrow keys to move paddle<br>
+    <button onclick="movePaddle(-20)">← Left</button>
+    <button onclick="movePaddle(20)">Right →</button>
+  </div>
+  <button onclick="resetGame()">Restart</button>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const ball = document.getElementById('ball');
+    const paddle = document.getElementById('paddle');
+    const scoreElement = document.getElementById('score');
+
+    let ballX = 190;
+    let ballY = 250;
+    let ballSpeedX = 3;
+    let ballSpeedY = -3;
+    let paddleX = 160;
+    let score = 0;
+    let gameRunning = true;
+    let bricks = [];
+
+    function createBricks() {
+      bricks = [];
+      for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 10; col++) {
+          const brick = document.createElement('div');
+          brick.className = 'brick';
+          brick.style.left = (col * 40) + 'px';
+          brick.style.top = (row * 25) + 'px';
+          brick.dataset.row = row;
+          brick.dataset.col = col;
+          gameArea.appendChild(brick);
+          bricks.push(brick);
+        }
+      }
+    }
+
+    function moveBall() {
+      if (!gameRunning) return;
+
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      // Wall collisions
+      if (ballX <= 0 || ballX >= 380) {
+        ballSpeedX = -ballSpeedX;
+      }
+      if (ballY <= 0) {
+        ballSpeedY = -ballSpeedY;
+      }
+
+      // Paddle collision
+      if (ballY >= 270 && ballY <= 280 && ballX >= paddleX && ballX <= paddleX + 80) {
+        ballSpeedY = -Math.abs(ballSpeedY);
+      }
+
+      // Bottom collision (game over)
+      if (ballY >= 300) {
+        gameOver();
+        return;
+      }
+
+      // Brick collisions
+      bricks.forEach((brick, index) => {
+        if (brick.style.display !== 'none') {
+          const brickLeft = parseInt(brick.style.left);
+          const brickTop = parseInt(brick.style.top);
+
+          if (ballX >= brickLeft && ballX <= brickLeft + 38 &&
+              ballY >= brickTop && ballY <= brickTop + 20) {
+            brick.style.display = 'none';
+            ballSpeedY = -ballSpeedY;
+            score++;
+            scoreElement.textContent = score;
+
+            if (score >= 50) {
+              winGame();
+            }
+          }
+        }
+      });
+
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+
+      setTimeout(moveBall, 20);
+    }
+
+    function movePaddle(delta) {
+      paddleX += delta;
+      if (paddleX < 0) paddleX = 0;
+      if (paddleX > 320) paddleX = 320;
+      paddle.style.left = paddleX + 'px';
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      alert(`Game Over! Score: ${score}`);
+    }
+
+    function winGame() {
+      gameRunning = false;
+      alert(`You Win! Score: ${score}`);
+    }
+
+    function resetGame() {
+      ballX = 190;
+      ballY = 250;
+      ballSpeedX = 3;
+      ballSpeedY = -3;
+      paddleX = 160;
+      score = 0;
+      scoreElement.textContent = score;
+      gameRunning = true;
+
+      // Remove old bricks
+      document.querySelectorAll('.brick').forEach(brick => brick.remove());
+
+      createBricks();
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+      paddle.style.left = paddleX + 'px';
+
+      moveBall();
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowLeft': movePaddle(-20); break;
+        case 'ArrowRight': movePaddle(20); break;
+      }
+    });
+
+    createBricks();
+    moveBall();
+  </script>
+</body>
+</html>

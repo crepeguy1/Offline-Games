@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Space Invaders (Simple)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #fff;
+    }
+    #gameArea {
+      position: relative;
+      width: 400px;
+      height: 500px;
+      background-color: #000;
+      border: 2px solid #fff;
+      margin: 20px auto;
+      overflow: hidden;
+    }
+    #player {
+      position: absolute;
+      width: 30px;
+      height: 20px;
+      background-color: #00ff00;
+      bottom: 10px;
+      left: 185px;
+      border-radius: 50% 50% 0 0;
+    }
+    .invader {
+      position: absolute;
+      width: 25px;
+      height: 20px;
+      background-color: #ff0000;
+      border-radius: 50%;
+    }
+    .bullet {
+      position: absolute;
+      width: 3px;
+      height: 10px;
+      background-color: #ffff00;
+    }
+    .enemy-bullet {
+      background-color: #ff00ff;
+    }
+    .score {
+      font-size: 24px;
+      margin: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .controls {
+      margin: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Space Invaders (Simple)</h1>
+  <div class="score">Score: <span id="score">0</span> | Lives: <span id="lives">3</span></div>
+  <div id="gameArea">
+    <div id="player"></div>
+  </div>
+  <div class="controls">
+    Arrow keys to move | Space to shoot<br>
+    <button onclick="movePlayer('left')">←</button>
+    <button onclick="movePlayer('right')">→</button>
+    <button onclick="shoot()">Shoot</button>
+  </div>
+  <button onclick="resetGame()">Restart</button>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const player = document.getElementById('player');
+    const scoreElement = document.getElementById('score');
+    const livesElement = document.getElementById('lives');
+
+    let playerX = 185;
+    let invaders = [];
+    let bullets = [];
+    let enemyBullets = [];
+    let score = 0;
+    let lives = 3;
+    let gameRunning = true;
+    let invaderDirection = 1;
+    let invaderSpeed = 1;
+    let invaderDrop = 0;
+
+    function createInvaders() {
+      invaders = [];
+      for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 8; col++) {
+          const invader = document.createElement('div');
+          invader.className = 'invader';
+          invader.style.left = (col * 45 + 20) + 'px';
+          invader.style.top = (row * 35 + 50) + 'px';
+          gameArea.appendChild(invader);
+          invaders.push(invader);
+        }
+      }
+    }
+
+    function moveInvaders() {
+      let hitEdge = false;
+      invaders.forEach(invader => {
+        const currentLeft = parseInt(invader.style.left);
+        const newLeft = currentLeft + (invaderDirection * invaderSpeed);
+
+        if (newLeft <= 0 || newLeft >= 375) {
+          hitEdge = true;
+        }
+      });
+
+      if (hitEdge) {
+        invaderDirection = -invaderDirection;
+        invaderDrop += 20;
+      }
+
+      invaders.forEach(invader => {
+        const currentLeft = parseInt(invader.style.left);
+        const currentTop = parseInt(invader.style.top);
+        invader.style.left = (currentLeft + (invaderDirection * invaderSpeed)) + 'px';
+        invader.style.top = (currentTop + invaderDrop) + 'px';
+        invaderDrop = 0;
+
+        // Check if invaders reached bottom
+        if (currentTop + invaderDrop >= 450) {
+          gameOver();
+        }
+      });
+
+      // Random enemy shooting
+      if (Math.random() < 0.02 && invaders.length > 0) {
+        const randomInvader = invaders[Math.floor(Math.random() * invaders.length)];
+        const invaderLeft = parseInt(randomInvader.style.left);
+        const invaderTop = parseInt(randomInvader.style.top);
+
+        const enemyBullet = document.createElement('div');
+        enemyBullet.className = 'bullet enemy-bullet';
+        enemyBullet.style.left = (invaderLeft + 11) + 'px';
+        enemyBullet.style.top = (invaderTop + 20) + 'px';
+        gameArea.appendChild(enemyBullet);
+        enemyBullets.push(enemyBullet);
+      }
+    }
+
+    function moveBullets() {
+      bullets.forEach((bullet, index) => {
+        const currentTop = parseInt(bullet.style.top);
+        bullet.style.top = (currentTop - 5) + 'px';
+
+        // Check collision with invaders
+        invaders.forEach((invader, invaderIndex) => {
+          const bulletRect = bullet.getBoundingClientRect();
+          const invaderRect = invader.getBoundingClientRect();
+
+          if (bulletRect.right > invaderRect.left &&
+              bulletRect.left < invaderRect.right &&
+              bulletRect.bottom > invaderRect.top &&
+              bulletRect.top < invaderRect.bottom) {
+            gameArea.removeChild(bullet);
+            gameArea.removeChild(invader);
+            bullets.splice(index, 1);
+            invaders.splice(invaderIndex, 1);
+            score += 10;
+            scoreElement.textContent = score;
+            return;
+          }
+        });
+
+        // Remove off-screen bullets
+        if (currentTop < 0) {
+          gameArea.removeChild(bullet);
+          bullets.splice(index, 1);
+        }
+      });
+    }
+
+    function moveEnemyBullets() {
+      enemyBullets.forEach((bullet, index) => {
+        const currentTop = parseInt(bullet.style.top);
+        bullet.style.top = (currentTop + 3) + 'px';
+
+        // Check collision with player
+        const bulletRect = bullet.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
+
+        if (bulletRect.right > playerRect.left &&
+            bulletRect.left < playerRect.right &&
+            bulletRect.bottom > playerRect.top &&
+            bulletRect.top < playerRect.bottom) {
+          gameArea.removeChild(bullet);
+          enemyBullets.splice(index, 1);
+          loseLife();
+          return;
+        }
+
+        // Remove off-screen bullets
+        if (currentTop > 500) {
+          gameArea.removeChild(bullet);
+          enemyBullets.splice(index, 1);
+        }
+      });
+    }
+
+    function movePlayer(direction) {
+      if (!gameRunning) return;
+
+      const step = 10;
+      if (direction === 'left' && playerX > 0) {
+        playerX -= step;
+      } else if (direction === 'right' && playerX < 370) {
+        playerX += step;
+      }
+      player.style.left = playerX + 'px';
+    }
+
+    function shoot() {
+      if (!gameRunning) return;
+
+      const bullet = document.createElement('div');
+      bullet.className = 'bullet';
+      bullet.style.left = (playerX + 13) + 'px';
+      bullet.style.top = '470px';
+      gameArea.appendChild(bullet);
+      bullets.push(bullet);
+    }
+
+    function loseLife() {
+      lives--;
+      livesElement.textContent = lives;
+      if (lives <= 0) {
+        gameOver();
+      }
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      alert(`Game Over! Final Score: ${score}`);
+    }
+
+    function checkWin() {
+      if (invaders.length === 0) {
+        gameRunning = false;
+        alert(`You Win! Final Score: ${score}`);
+      }
+    }
+
+    function resetGame() {
+      // Clear existing elements
+      invaders.forEach(invader => { if (invader.parentNode) gameArea.removeChild(invader); });
+      bullets.forEach(bullet => { if (bullet.parentNode) gameArea.removeChild(bullet); });
+      enemyBullets.forEach(bullet => { if (bullet.parentNode) gameArea.removeChild(bullet); });
+
+      invaders = [];
+      bullets = [];
+      enemyBullets = [];
+      playerX = 185;
+      score = 0;
+      lives = 3;
+      invaderDirection = 1;
+      invaderSpeed = 1;
+      scoreElement.textContent = score;
+      livesElement.textContent = lives;
+      gameRunning = true;
+
+      player.style.left = playerX + 'px';
+      createInvaders();
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowLeft': movePlayer('left'); break;
+        case 'ArrowRight': movePlayer('right'); break;
+        case ' ': e.preventDefault(); shoot(); break;
+      }
+    });
+
+    function gameLoop() {
+      if (!gameRunning) return;
+
+      moveInvaders();
+      moveBullets();
+      moveEnemyBullets();
+      checkWin();
+
+      setTimeout(gameLoop, 50);
+    }
+
+    resetGame();
+    gameLoop();
+  </script>
+</body>
+</html>

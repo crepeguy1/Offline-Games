@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Snake (Simple Version)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(20, 20px);
+      grid-template-rows: repeat(20, 20px);
+      gap: 1px;
+      background-color: #333;
+      padding: 10px;
+      margin: 20px auto;
+      width: 420px;
+      height: 420px;
+    }
+    .cell {
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+    }
+    .snake {
+      background-color: #4CAF50;
+    }
+    .food {
+      background-color: #f44336;
+    }
+    .score {
+      font-size: 24px;
+      margin: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .controls {
+      margin: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Snake (Simple)</h1>
+  <div class="score">Score: <span id="score">0</span></div>
+  <div id="gameBoard"></div>
+  <div class="controls">
+    Use arrow keys or buttons to move<br>
+    <button onclick="changeDirection('up')">↑</button><br>
+    <button onclick="changeDirection('left')">←</button>
+    <button onclick="changeDirection('down')">↓</button>
+    <button onclick="changeDirection('right')">→</button>
+  </div>
+  <button onclick="resetGame()">Restart</button>
+
+  <script>
+    const boardSize = 20;
+    const gameBoard = document.getElementById('gameBoard');
+    const scoreElement = document.getElementById('score');
+
+    let snake = [{x: 10, y: 10}];
+    let food = {x: 15, y: 15};
+    let direction = 'right';
+    let score = 0;
+    let gameRunning = true;
+
+    function createBoard() {
+      gameBoard.innerHTML = '';
+      for (let y = 0; y < boardSize; y++) {
+        for (let x = 0; x < boardSize; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.id = `cell-${x}-${y}`;
+          gameBoard.appendChild(cell);
+        }
+      }
+    }
+
+    function updateBoard() {
+      // Clear all cells
+      document.querySelectorAll('.cell').forEach(cell => {
+        cell.className = 'cell';
+      });
+
+      // Draw snake
+      snake.forEach(segment => {
+        const cell = document.getElementById(`cell-${segment.x}-${segment.y}`);
+        if (cell) cell.classList.add('snake');
+      });
+
+      // Draw food
+      const foodCell = document.getElementById(`cell-${food.x}-${food.y}`);
+      if (foodCell) foodCell.classList.add('food');
+    }
+
+    function moveSnake() {
+      if (!gameRunning) return;
+
+      const head = {...snake[0]};
+
+      switch(direction) {
+        case 'up': head.y--; break;
+        case 'down': head.y++; break;
+        case 'left': head.x--; break;
+        case 'right': head.x++; break;
+      }
+
+      // Check wall collision
+      if (head.x < 0 || head.x >= boardSize || head.y < 0 || head.y >= boardSize) {
+        gameOver();
+        return;
+      }
+
+      // Check self collision
+      if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+        gameOver();
+        return;
+      }
+
+      snake.unshift(head);
+
+      // Check food collision
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        scoreElement.textContent = score;
+        generateFood();
+      } else {
+        snake.pop();
+      }
+
+      updateBoard();
+    }
+
+    function generateFood() {
+      do {
+        food.x = Math.floor(Math.random() * boardSize);
+        food.y = Math.floor(Math.random() * boardSize);
+      } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
+    }
+
+    function changeDirection(newDirection) {
+      if (!gameRunning) return;
+
+      // Prevent reverse direction
+      const opposites = {
+        'up': 'down',
+        'down': 'up',
+        'left': 'right',
+        'right': 'left'
+      };
+
+      if (opposites[direction] !== newDirection) {
+        direction = newDirection;
+      }
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      alert(`Game Over! Score: ${score}`);
+    }
+
+    function resetGame() {
+      snake = [{x: 10, y: 10}];
+      direction = 'right';
+      score = 0;
+      scoreElement.textContent = score;
+      gameRunning = true;
+      generateFood();
+      updateBoard();
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowUp': changeDirection('up'); break;
+        case 'ArrowDown': changeDirection('down'); break;
+        case 'ArrowLeft': changeDirection('left'); break;
+        case 'ArrowRight': changeDirection('right'); break;
+      }
+    });
+
+    createBoard();
+    updateBoard();
+    setInterval(moveSnake, 200);
+  </script>
+</body>
+</html>
