@@ -4,278 +4,869 @@
   <meta charset="UTF-8">
   <title>Game Hub</title>
   <style>
+    :root {
+      --accent: #4caf50;
+      --background: #ffffff;
+      --foreground: #111111;
+      --card: #f4f4f4;
+    }
     body {
       font-family: Arial, sans-serif;
-      background-color: white;
-      color: black;
+      background-color: var(--background);
+      color: var(--foreground);
       text-align: center;
       padding: 20px;
+      margin: 0;
     }
-
+    body.dark-mode {
+      --background: #121212;
+      --foreground: #eeeeee;
+      --card: #1f1f1f;
+    }
     h1 {
-      color: blue;
+      color: var(--accent);
       font-size: 36px;
+      margin-bottom: 8px;
     }
-
     p {
       font-size: 18px;
+      margin-top: 0;
+      margin-bottom: 18px;
     }
-
-    body.light-mode {
-      background-color: white;
-      color: black;
-    }
-
-    body.dark-mode {
-      background-color: #121212;
-      color: #ffffff;
-    }
-
-    nav {
+    #topControls {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
-      max-width: 800px;
-      margin: 0 auto;
+      margin-bottom: 15px;
     }
-
-
+    #modeToggle,
+    .category-btn,
+    .game-button,
+    #accentColor {
+      border: none;
+      border-radius: 8px;
+    }
     #modeToggle {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      padding: 10px;
-      background-color: gray;
+      padding: 10px 14px;
+      background-color: var(--accent);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    #accentColor {
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+      padding: 0;
+      background: transparent;
+    }
+    #hubInfo {
+      max-width: 900px;
+      margin: 0 auto 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .info-card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      text-align: left;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .info-card h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 20px;
+    }
+    .badge-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: var(--accent);
+      color: white;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+    .score-item {
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+    .quick-link {
+      display: inline-block;
+      width: 100%;
+      text-align: left;
+      border: 1px solid #ccc;
+      background: transparent;
+      color: var(--foreground);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .quick-link:hover {
+      background: rgba(76,175,80,0.08);
+    }
+    .preview-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .preview-card p {
+      margin: 0 0 10px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .play-now-btn {
+      padding: 12px 16px;
+      background: var(--accent);
       color: white;
       border: none;
+      border-radius: 10px;
       cursor: pointer;
+      width: 100%;
+      margin-top: auto;
     }
-
-    .game-button {
-      padding: 15px;
-      font-size: 16px;
-      background-color: lightblue;
-      border: 1px solid blue;
-      color: black;
-      cursor: pointer;
-      width: 200px;
+    .play-now-btn:hover {
+      opacity: 0.92;
     }
-
-    .game-button:hover {
-      background-color: blue;
-      color: white;
+    body.no-animations *,
+    body.no-animations *::before,
+    body.no-animations *::after {
+      transition: none !important;
+      animation: none !important;
     }
-
-    #search {
-      padding: 8px;
+    .stats-item {
+      margin-bottom: 6px;
       font-size: 14px;
-      border: 1px solid black;
-      width: 200px;
+    }
+    .settings-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .settings-toggle label {
+      font-size: 14px;
+    }
+    .settings-toggle input {
+      width: 20px;
+      height: 20px;
+    }
+    .help-tip {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+    #filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .category-btn {
+      padding: 10px 16px;
+      background-color: var(--card);
+      color: var(--foreground);
+      cursor: pointer;
+      min-width: 90px;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .category-btn.active,
+    .category-btn:hover {
+      background-color: var(--accent);
+      color: white;
+      transform: translateY(-1px);
+    }
+    #search {
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #999;
+      border-radius: 10px;
+      width: min(100%, 420px);
       margin-bottom: 20px;
+      background: var(--card);
+      color: var(--foreground);
     }
-
-    iframe {
-      width: 800px;
-      height: 500px;
-      border: 1px solid black;
-      margin-top: 20px;
+    nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      max-width: 1000px;
+      margin: 0 auto;
     }
-
+    .game-button {
+      padding: 16px;
+      font-size: 16px;
+      background-color: var(--card);
+      border: 2px solid transparent;
+      color: var(--foreground);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      min-height: 72px;
+      text-align: left;
+    }
+    .game-button:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      background: rgba(76,175,80,0.1);
+    }
+    .game-button .label {
+      display: block;
+      font-weight: bold;
+    }
     #loading {
       display: none;
       margin-top: 20px;
       font-size: 18px;
     }
-
     #back-button {
       display: none;
       margin-top: 10px;
-      padding: 10px;
-      background-color: red;
+      padding: 12px 18px;
+      background-color: #f44336;
       color: white;
       border: none;
+      border-radius: 10px;
       cursor: pointer;
     }
-
+    iframe {
+      width: 100%;
+      max-width: 1000px;
+      height: 520px;
+      border: 1px solid #999;
+      margin-top: 20px;
+      border-radius: 12px;
+      background: white;
+    }
     footer {
       margin-top: 20px;
       font-size: 14px;
       color: gray;
+    }
+    @media (max-width: 760px) {
+      #hubInfo {
+        grid-template-columns: 1fr;
+      }
+      iframe {
+        height: 420px;
+      }
+      .game-button {
+        min-height: 64px;
+      }
     }
   </style>
 </head>
 <body>
 
   <h1>My Game Hub</h1>
-  <p>Click on a game to play it!</p>
-  <button class="toggle-btn" id="modeToggle">Toggle Dark Mode</button>
+  <p>Pick a game, track your best scores, and play with touch-friendly buttons.</p>
 
-  <!-- i added a search box so you can find games easier -->
+  <div id="topControls">
+    <button id="modeToggle">Toggle Dark Mode</button>
+    <button id="randomButton">Surprise Me</button>
+    <button id="favoriteButton" disabled>Favorite Game</button>
+    <button id="muteButton">Mute Sounds</button>
+    <button id="clearButton">Clear Hub Data</button>
+    <label>
+      Accent color:
+      <input type="color" id="accentColor" title="Choose accent color">
+    </label>
+  </div>
+
+  <div id="hubInfo">
+    <div class="info-card">
+      <h2>Best Scores</h2>
+      <div id="scoreBoard"></div>
+    </div>
+    <div class="info-card">
+      <h2>Achievements</h2>
+      <div id="badges" class="badge-list"></div>
+      <p style="margin-top:12px; font-size:14px; color:#666;">Achievements unlock when you play games, score high, or try new things.</p>
+    </div>
+    <div class="info-card preview-card">
+      <h2>Game Preview</h2>
+      <div id="previewContent">
+        <p id="previewDescription">Hover over a game card to see its description, then press Play Now.</p>
+        <p id="previewDetails" style="font-size:13px; color:#777;">Quick launch favorites and recent games too.</p>
+      </div>
+      <button id="previewPlay" class="play-now-btn" disabled>Play Now</button>
+    </div>
+    <div class="info-card">
+      <h2>Recent Plays</h2>
+      <div id="recentList"></div>
+      <p style="margin-top:12px; font-size:14px; color:#666;">Your latest games appear here automatically.</p>
+    </div>
+    <div class="info-card">
+      <h2>Favorites</h2>
+      <div id="favoriteList"></div>
+      <p style="margin-top:12px; font-size:14px; color:#666;">Mark favorites while a game is open.</p>
+    </div>
+    <div class="info-card">
+      <h2>Game of the Day</h2>
+      <div id="gameOfDay"></div>
+      <button id="playDayGame" class="play-now-btn">Play Today's Game</button>
+    </div>
+    <div class="info-card">
+      <h2>Stats</h2>
+      <div id="statsBoard"></div>
+    </div>
+    <div class="info-card">
+      <h2>Settings</h2>
+      <div class="settings-toggle">
+        <label for="showAnimations">Show animations</label>
+        <input type="checkbox" id="showAnimations">
+      </div>
+      <div class="settings-toggle">
+        <label for="autoPreview">Auto-preview on hover</label>
+        <input type="checkbox" id="autoPreview" checked>
+      </div>
+    </div>
+    <div class="info-card">
+      <h2>Help</h2>
+      <div class="help-tip">• Tap game buttons to play</div>
+      <div class="help-tip">• Use categories to filter games</div>
+      <div class="help-tip">• Favorites and recent plays are saved locally</div>
+      <div class="help-tip">• Works offline on Gabb phones</div>
+    </div>
+  </div>
+
+  <div id="filters">
+    <button class="category-btn active" data-category="all">All</button>
+    <button class="category-btn" data-category="arcade">Arcade</button>
+    <button class="category-btn" data-category="puzzle">Puzzle</button>
+    <button class="category-btn" data-category="fun">Fun</button>
+  </div>
+
   <input type="text" id="search" placeholder="Search games...">
 
-  <!-- all the game buttons go here -->
   <nav id="game-nav">
-    <button class="game-button" onclick="loadGame('games/New_Game.html')" aria-label="Play Reaction Time Game">
-      Reaction Time Game
+    <button class="game-button" data-category="fun" onclick="loadGame('games/New_Game.html')">
+      <span class="label">Reaction Time</span>
+      Test your reflexes
     </button>
-
-    <button class="game-button" onclick="loadGame('games/breakout_simple.html')" aria-label="Play Breakout Game">
-      Breakout (Simple)
+    <button class="game-button" data-category="arcade" onclick="loadGame('games/breakout_simple.html')">
+      <span class="label">Breakout (Simple)</span>
+      Smash the bricks
     </button>
-
-    <button class="game-button" onclick="loadGame('games/2048.html')" aria-label="Play 2048 Game">
-      2048
+    <button class="game-button" data-category="puzzle" onclick="loadGame('games/2048.html')">
+      <span class="label">2048</span>
+      Slide to 2048
     </button>
-
-    <button class="game-button" onclick="loadGame('games/dine_game_simple.html')" aria-label="Play Dino Plus Game">
-      Dino Plus (Simple)
+    <button class="game-button" data-category="arcade" onclick="loadGame('games/dine_game_simple.html')">
+      <span class="label">Dino Plus (Simple)</span>
+      Jump over cacti
     </button>
-
-    <button class="game-button" onclick="loadGame('games/snake_simple.html')" aria-label="Play Snake Game">
-      Snake (Simple)
+    <button class="game-button" data-category="arcade" onclick="loadGame('games/snake_simple.html')">
+      <span class="label">Snake (Simple)</span>
+      Eat food and grow
     </button>
-
-    <button class="game-button" onclick="loadGame('games/tetris_simple.html')" aria-label="Play Tetris Game">
-      Tetris (Simple)
+    <button class="game-button" data-category="puzzle" onclick="loadGame('games/tetris_simple.html')">
+      <span class="label">Tetris (Simple)</span>
+      Stack the blocks
     </button>
-
-    <button class="game-button" onclick="loadGame('games/flappy_bird_simple.html')" aria-label="Play Flappy Bird Clone">
-      Flappy Clone (Simple)
+    <button class="game-button" data-category="arcade" onclick="loadGame('games/flappy_bird_simple.html')">
+      <span class="label">Flappy Clone (Simple)</span>
+      Fly between pipes
     </button>
-
-    <button class="game-button" onclick="loadGame('games/minesweeper_simple.html')" aria-label="Play Minesweeper Game">
-      Minesweeper (Simple)
+    <button class="game-button" data-category="puzzle" onclick="loadGame('games/minesweeper_simple.html')">
+      <span class="label">Minesweeper (Simple)</span>
+      Find the mines
     </button>
-
-    <button class="game-button" onclick="loadGame('games/tic_tac_toe.html')" aria-label="Play Tic-Tac-Toe Game">
-      Tic-Tac-Toe
+    <button class="game-button" data-category="puzzle" onclick="loadGame('games/tic_tac_toe.html')">
+      <span class="label">Tic-Tac-Toe</span>
+      X vs O
     </button>
-
-    <button class="game-button" onclick="loadGame('games/rock_paper_scissors.html')" aria-label="Play Rock Paper Scissors Game">
-      Rock Paper Scissors
+    <button class="game-button" data-category="fun" onclick="loadGame('games/rock_paper_scissors.html')">
+      <span class="label">Rock Paper Scissors</span>
+      Beat the computer
     </button>
-
-    <button class="game-button" onclick="loadGame('games/memory_game.html')" aria-label="Play Memory Game">
-      Memory Game
+    <button class="game-button" data-category="fun" onclick="loadGame('games/memory_game.html')">
+      <span class="label">Memory Game</span>
+      Match the cards
     </button>
-
-    <button class="game-button" onclick="loadGame('games/pong_simple.html')" aria-label="Play Pong Game">
-      Pong (Simple)
+    <button class="game-button" data-category="arcade" onclick="loadGame('games/pong_simple.html')">
+      <span class="label">Pong (Simple)</span>
+      Two-player table tennis
     </button>
-
-    <button class="game-button" onclick="loadGame('games/simon_says.html')" aria-label="Play Simon Says Game">
-      Simon Says
+    <button class="game-button" data-category="fun" onclick="loadGame('games/simon_says.html')">
+      <span class="label">Simon Says</span>
+      Repeat the pattern
     </button>
-
-    <button class="game-button" onclick="loadGame('games/whack_a_mole.html')" aria-label="Play Whack-a-Mole Game">
-      Whack-a-Mole
+    <button class="game-button" data-category="fun" onclick="loadGame('games/whack_a_mole.html')">
+      <span class="label">Whack-a-Mole</span>
+      Hit the moles
     </button>
-
-    <button class="game-button" onclick="loadGame('games/connect_four.html')" aria-label="Play Connect Four Game">
-      Connect Four
+    <button class="game-button" data-category="fun" onclick="loadGame('games/clicker_game.html')">
+      <span class="label">Tap Clicker</span>
+      Tap fast to score
     </button>
-
-    <button class="game-button" onclick="loadGame('games/frogger_simple.html')" aria-label="Play Frogger Game">
-      Frogger (Simple)
+    <button class="game-button" data-category="puzzle" onclick="loadGame('games/connect_four.html')">
+      <span class="label">Connect Four</span>
+      Drop four in a row
     </button>
-
-    <button class="game-button" onclick="loadGame('games/space_invaders_simple.html')" aria-label="Play Space Invaders Game">
-      Space Invaders (Simple)
+    <button class="game-button" data-category="arcade" onclick="loadGame('games/frogger_simple.html')">
+      <span class="label">Frogger (Simple)</span>
+      Cross the road
     </button>
-
-    <button class="game-button" onclick="loadGame('games/quiz_game.html')" aria-label="Play Quiz Game">
-      Quiz Game
+    <button class="game-button" data-category="arcade" onclick="loadGame('games/space_invaders_simple.html')">
+      <span class="label">Space Invaders (Simple)</span>
+      Shoot the aliens
+    </button>
+    <button class="game-button" data-category="fun" onclick="loadGame('games/quiz_game.html')">
+      <span class="label">Quiz Game</span>
+      Answer the questions
     </button>
   </nav>
 
   <div id="loading">Loading game...</div>
-  <!-- back button -->
   <button id="back-button" onclick="backToHub()">Back to Hub</button>
+  <p id="currentGameLabel" style="display:none; margin-top:12px; font-size:15px; color:#666;"></p>
 
-  <!-- iframe for games -->
   <iframe id="gameFrame"></iframe>
 
   <!-- javascript -->
   <script>
-    // this makes the search work - i learned this from w3schools
     const searchInput = document.getElementById('search');
     const gameNav = document.getElementById('game-nav');
     const buttons = gameNav.querySelectorAll('.game-button');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const scoreBoard = document.getElementById('scoreBoard');
+    const badges = document.getElementById('badges');
+    const accentColor = document.getElementById('accentColor');
+    const modeToggle = document.getElementById('modeToggle');
+    const frame = document.getElementById('gameFrame');
+    const randomButton = document.getElementById('randomButton');
+    const favoriteButton = document.getElementById('favoriteButton');
+    const clearButton = document.getElementById('clearButton');
+    const recentList = document.getElementById('recentList');
+    const favoriteList = document.getElementById('favoriteList');
+    const currentGameLabel = document.getElementById('currentGameLabel');
+    const muteButton = document.getElementById('muteButton');
+    const previewDescription = document.getElementById('previewDescription');
+    const previewDetails = document.getElementById('previewDetails');
+    const previewPlay = document.getElementById('previewPlay');
+    const gameOfDay = document.getElementById('gameOfDay');
+    const playDayGame = document.getElementById('playDayGame');
+    const statsBoard = document.getElementById('statsBoard');
+    const showAnimations = document.getElementById('showAnimations');
+    const autoPreview = document.getElementById('autoPreview');
+    let currentCategory = 'all';
+    let currentGame = null;
+    let audioEnabled = localStorage.getItem('soundEnabled') !== 'false';
+    let animationsEnabled = localStorage.getItem('animationsEnabled') !== 'false';
+    let previewEnabled = localStorage.getItem('previewEnabled') !== 'false';
+    const bestScores = JSON.parse(localStorage.getItem('hubBestScores') || '{}');
+    const savedBadges = JSON.parse(localStorage.getItem('hubBadges') || '{}');
+    const recentGames = JSON.parse(localStorage.getItem('hubRecentGames') || '[]');
+    const favoriteGames = JSON.parse(localStorage.getItem('hubFavoriteGames') || '[]');
+    const titleToFile = {};
+    buttons.forEach(button => {
+      const label = button.querySelector('.label').textContent;
+      const match = button.getAttribute('onclick').match(/loadGame\('(.+?)'\)/);
+      if (match) titleToFile[label] = match[1];
+    });
 
-    searchInput.addEventListener('input', function() {
-      const query = this.value.toLowerCase();
+    function setAccent(color) {
+      document.documentElement.style.setProperty('--accent', color);
+      localStorage.setItem('accentColor', color);
+    }
+
+    function updateScoreBoard() {
+      const items = Object.keys(bestScores).sort((a, b) => bestScores[b] - bestScores[a]);
+      if (items.length === 0) {
+        scoreBoard.innerHTML = '<p style="margin:0; color:#666;">No scores yet. Play a game to start a leaderboard.</p>';
+        return;
+      }
+      scoreBoard.innerHTML = items.map(game => `<div class="score-item"><strong>${game}:</strong> ${bestScores[game]}</div>`).join('');
+    }
+
+    function updateBadges() {
+      const keys = Object.keys(savedBadges);
+      if (keys.length === 0) {
+        badges.innerHTML = '<span class="badge">Play your first game</span>';
+        return;
+      }
+      badges.innerHTML = keys.map(name => `<span class="badge">${savedBadges[name]}</span>`).join('');
+    }
+
+    function updateRecentList() {
+      if (recentGames.length === 0) {
+        recentList.innerHTML = '<p style="margin:0; color:#666;">No recent games yet.</p>';
+        return;
+      }
+      recentList.innerHTML = recentGames.map(name => `<button class="quick-link">${name}</button>`).join('');
+    }
+
+    function updateFavoriteList() {
+      if (favoriteGames.length === 0) {
+        favoriteList.innerHTML = '<p style="margin:0; color:#666;">No favorites yet.</p>';
+        return;
+      }
+      favoriteList.innerHTML = favoriteGames.map(name => `<button class="quick-link">${name}</button>`).join('');
+    }
+
+    function updateStatsBoard() {
+      const gamesPlayed = recentGames.length;
+      const favoritesCount = favoriteGames.length;
+      const badgesCount = Object.keys(savedBadges).length;
+      const highScoreGames = Object.keys(bestScores).length;
+      statsBoard.innerHTML = `
+        <div class="stats-item"><strong>Recent games:</strong> ${gamesPlayed}</div>
+        <div class="stats-item"><strong>Favorites:</strong> ${favoritesCount}</div>
+        <div class="stats-item"><strong>Badges unlocked:</strong> ${badgesCount}</div>
+        <div class="stats-item"><strong>High score games:</strong> ${highScoreGames}</div>
+      `;
+    }
+
+    function updateGameOfDay() {
+      const titles = Object.keys(titleToFile);
+      if (titles.length === 0) {
+        gameOfDay.textContent = 'No games available yet.';
+        playDayGame.disabled = true;
+        return;
+      }
+      const dayIndex = Math.floor(new Date().getTime() / 86400000) % titles.length;
+      const title = titles[dayIndex];
+      const file = titleToFile[title];
+      gameOfDay.innerHTML = `<strong>${title}</strong><p style="margin:8px 0 0; color:#555;">Try today’s featured game for a new challenge.</p>`;
+      playDayGame.disabled = !file;
+      playDayGame.dataset.file = file || '';
+    }
+
+    function setControls() {
+      showAnimations.checked = animationsEnabled;
+      autoPreview.checked = previewEnabled;
+      document.body.classList.toggle('no-animations', !animationsEnabled);
+    }
+
+    function setPreviewBehavior() {
+      // Preview behavior is handled by the hover listener with a runtime check.
+    }
+
+    function toggleAnimations() {
+      animationsEnabled = showAnimations.checked;
+      localStorage.setItem('animationsEnabled', animationsEnabled ? 'true' : 'false');
+      document.body.classList.toggle('no-animations', !animationsEnabled);
+    }
+
+    function togglePreview() {
+      previewEnabled = autoPreview.checked;
+      localStorage.setItem('previewEnabled', previewEnabled ? 'true' : 'false');
+      setPreviewBehavior();
+    }
+
+    function isFavorite(game) {
+      return favoriteGames.includes(game);
+    }
+
+    function updateFavoriteButton() {
+      if (!currentGame) {
+        favoriteButton.disabled = true;
+        favoriteButton.textContent = 'Favorite Game';
+        return;
+      }
+      favoriteButton.disabled = false;
+      favoriteButton.textContent = isFavorite(currentGame) ? 'Unfavorite' : 'Favorite Game';
+    }
+
+    function toggleFavorite() {
+      if (!currentGame) return;
+      const index = favoriteGames.indexOf(currentGame);
+      if (index === -1) {
+        favoriteGames.unshift(currentGame);
+        addBadge('favoriteFirst', 'Favorite Finder');
+      } else {
+        favoriteGames.splice(index, 1);
+      }
+      localStorage.setItem('hubFavoriteGames', JSON.stringify(favoriteGames));
+      updateFavoriteList();
+      updateFavoriteButton();
+      updateStatsBoard();
+    }
+
+    function saveGameHistory(game) {
+      if (!game) return;
+      const existingIndex = recentGames.indexOf(game);
+      if (existingIndex !== -1) {
+        recentGames.splice(existingIndex, 1);
+      }
+      recentGames.unshift(game);
+      if (recentGames.length > 6) recentGames.pop();
+      localStorage.setItem('hubRecentGames', JSON.stringify(recentGames));
+      updateRecentList();
+      updateStatsBoard();
+    }
+
+    function getGameFileByTitle(title) {
+      return titleToFile[title] || null;
+    }
+
+    function setPreview(title, file) {
+      previewDescription.textContent = `Tap Play Now to launch ${title}.`;
+      previewDetails.textContent = `Category: ${Array.from(buttons).find(btn => btn.querySelector('.label').textContent === title)?.dataset.category || 'Game'}`;
+      previewPlay.disabled = !file;
+      previewPlay.dataset.file = file || '';
+    }
+
+    function setPreviewFromButton(button) {
+      const title = button.querySelector('.label').textContent;
+      const description = button.textContent.replace(title, '').trim();
+      const fileMatch = button.getAttribute('onclick').match(/loadGame\('(.+?)'\)/);
+      const file = fileMatch ? fileMatch[1] : null;
+      previewDescription.textContent = description || `Ready to play ${title}.`;
+      previewDetails.textContent = `Category: ${button.dataset.category}`;
+      previewPlay.disabled = !file;
+      previewPlay.dataset.file = file || '';
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      localStorage.setItem('soundEnabled', audioEnabled ? 'true' : 'false');
+      setMuteText();
+    }
+
+    function setMuteText() {
+      muteButton.textContent = audioEnabled ? 'Mute Sounds' : 'Unmute Sounds';
+    }
+
+    function getListButtonFile(title) {
+      return getGameFileByTitle(title);
+    }
+
+    function handleQuickLaunch(event) {
+      const button = event.target.closest('.quick-link');
+      if (!button) return;
+      const title = button.textContent;
+      const file = getListButtonFile(title);
+      if (file) {
+        loadGame(file);
+      }
+    }
+
+    previewPlay.addEventListener('click', () => {
+      const file = previewPlay.dataset.file;
+      if (file) loadGame(file);
+    });
+
+    recentList.addEventListener('click', handleQuickLaunch);
+    favoriteList.addEventListener('click', handleQuickLaunch);
+
+    function loadRandomGame() {
+      const visibleButtons = Array.from(buttons).filter(btn => btn.style.display !== 'none');
+      if (visibleButtons.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * visibleButtons.length);
+      const randomButtonItem = visibleButtons[randomIndex];
+      const match = randomButtonItem.getAttribute('onclick').match(/loadGame\('(.+?)'\)/);
+      if (!match) return;
+      const newGameFile = match[1];
+      addBadge('luckyPick', 'Lucky Gamer');
+      playClickSound('special');
+      loadGame(newGameFile);
+    }
+
+    function clearHubData() {
+      if (!confirm('Clear all hub data including scores, badges, favorites, and recent plays?')) return;
+      localStorage.removeItem('hubBestScores');
+      localStorage.removeItem('hubBadges');
+      localStorage.removeItem('hubRecentGames');
+      localStorage.removeItem('hubFavoriteGames');
+      Object.keys(bestScores).forEach(key => delete bestScores[key]);
+      Object.keys(savedBadges).forEach(key => delete savedBadges[key]);
+      recentGames.length = 0;
+      favoriteGames.length = 0;
+      updateScoreBoard();
+      updateBadges();
+      updateRecentList();
+      updateFavoriteList();
+      updateStatsBoard();
+      addBadge('freshStart', 'Fresh Start');
+    }
+
+    function addBadge(key, label) {
+      if (!savedBadges[key]) {
+        savedBadges[key] = label;
+        localStorage.setItem('hubBadges', JSON.stringify(savedBadges));
+        updateBadges();
+      }
+    }
+
+    function setBestScore(game, value) {
+      const previous = bestScores[game] || 0;
+      if (value > previous) {
+        bestScores[game] = value;
+        localStorage.setItem('hubBestScores', JSON.stringify(bestScores));
+        updateScoreBoard();
+        playClickSound('win');
+      }
+    }
+
+    function playClickSound(type = 'click') {
+      if (!audioEnabled) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioCtx.destination);
+        oscillator.type = 'triangle';
+        oscillator.frequency.value = type === 'win' ? 440 : type === 'special' ? 520 : 330;
+        gain.gain.value = 0.18;
+        oscillator.start();
+        setTimeout(() => {
+          oscillator.stop();
+          audioCtx.close();
+        }, type === 'win' ? 240 : 90);
+      } catch (e) {
+        console.warn('Sound not supported', e);
+      }
+    }
+
+    function filterGames() {
+      const query = searchInput.value.toLowerCase();
       buttons.forEach(button => {
-        const text = button.textContent.toLowerCase();
-        button.style.display = text.includes(query) ? 'block' : 'none';
+        const title = button.textContent.toLowerCase();
+        const category = button.dataset.category;
+        const visible = title.includes(query) && (currentCategory === 'all' || category === currentCategory);
+        button.style.display = visible ? 'block' : 'none';
+      });
+    }
+
+    searchInput.addEventListener('input', filterGames);
+
+    categoryButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        categoryButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.dataset.category;
+        filterGames();
       });
     });
 
-    const modeToggle = document.getElementById('modeToggle');
     const savedMode = localStorage.getItem('theme');
-
     if (savedMode) {
       document.body.classList.add(savedMode);
     } else {
       document.body.classList.add('light-mode');
     }
 
-    function updateButtonText() {
-      if (document.body.classList.contains('dark-mode')) {
-        modeToggle.textContent = 'Switch to Light Mode';
-      } else {
-        modeToggle.textContent = 'Switch to Dark Mode';
-      }
+    function updateModeText() {
+      modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     }
 
-    updateButtonText();
+    updateModeText();
 
     modeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
       document.body.classList.toggle('light-mode');
-
-      if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark-mode');
-      } else {
-        localStorage.setItem('theme', 'light-mode');
-      }
-
-      updateButtonText();
+      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark-mode' : 'light-mode');
+      updateModeText();
     });
 
-    // this function loads the games in the iframe - pretty cool huh?
+    const savedAccent = localStorage.getItem('accentColor') || '#4caf50';
+    accentColor.value = savedAccent;
+    setAccent(savedAccent);
+    accentColor.addEventListener('input', () => setAccent(accentColor.value));
+    randomButton.addEventListener('click', loadRandomGame);
+    favoriteButton.addEventListener('click', toggleFavorite);
+    muteButton.addEventListener('click', toggleAudio);
+    clearButton.addEventListener('click', clearHubData);
+    showAnimations.addEventListener('change', toggleAnimations);
+    autoPreview.addEventListener('change', togglePreview);
+    previewPlay.addEventListener('click', () => {
+      const file = previewPlay.dataset.file;
+      if (file) loadGame(file);
+    });
+    playDayGame.addEventListener('click', () => {
+      const file = playDayGame.dataset.file;
+      if (file) loadGame(file);
+    });
+
+    buttons.forEach(btn => {
+      btn.addEventListener('mouseover', () => {
+        if (previewEnabled) setPreviewFromButton(btn);
+      });
+      btn.addEventListener('focus', () => {
+        if (previewEnabled) setPreviewFromButton(btn);
+      });
+    });
+
+    setMuteText();
+    setControls();
+    setPreviewBehavior();
+    updateGameOfDay();
+    updateStatsBoard();
+
     function loadGame(file) {
-      const iframe = document.getElementById("gameFrame");
-      const loading = document.getElementById("loading");
-      const backBtn = document.getElementById("back-button");
-      
-      loading.style.display = "block";
-      iframe.style.display = "none";
-      backBtn.style.display = "none";
-      
-      iframe.src = file;
+      const iframe = frame;
+      const loading = document.getElementById('loading');
+      const backBtn = document.getElementById('back-button');
+      const selectedColor = accentColor.value || '#4caf50';
+      let src = file;
+      if (src.includes('snake_simple.html') || src.includes('dine_game_simple.html') || src.includes('clicker_game.html')) {
+        const separator = src.includes('?') ? '&' : '?';
+        src += `${separator}color=${encodeURIComponent(selectedColor)}`;
+      }
+      const matchedButton = Array.from(buttons).find(btn => btn.getAttribute('onclick')?.includes(file));
+      currentGame = matchedButton ? matchedButton.querySelector('.label').textContent : file.split('/').pop().replace('.html', '').replace(/[-_]+/g, ' ');
+      currentGameLabel.textContent = `Playing: ${currentGame}`;
+      currentGameLabel.style.display = 'block';
+      updateFavoriteButton();
+      saveGameHistory(currentGame);
+
+      loading.style.display = 'block';
+      iframe.style.display = 'none';
+      backBtn.style.display = 'none';
+      iframe.src = src;
       iframe.onload = function() {
-        loading.style.display = "none";
-        iframe.style.display = "block";
-        backBtn.style.display = "block";
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+        backBtn.style.display = 'block';
       };
+      playClickSound();
+      addBadge('playedGame', 'Played a game');
     }
 
-    // goes back to the hub - simple but works
     function backToHub() {
-      const iframe = document.getElementById("gameFrame");
-      const loading = document.getElementById("loading");
-      const backBtn = document.getElementById("back-button");
-      
-      iframe.src = "";
-      iframe.style.display = "none";
-      loading.style.display = "none";
-      backBtn.style.display = "none";
+      const iframe = frame;
+      const loading = document.getElementById('loading');
+      const backBtn = document.getElementById('back-button');
+      iframe.src = '';
+      iframe.style.display = 'none';
+      loading.style.display = 'none';
+      backBtn.style.display = 'none';
+      currentGameLabel.style.display = 'none';
+      currentGame = null;
+      updateFavoriteButton();
     }
+
+    window.addEventListener('message', event => {
+      const data = event.data;
+      if (!data || typeof data !== 'object' || !data.type) return;
+      if (data.type === 'score' && data.game && typeof data.value === 'number') {
+        setBestScore(data.game, data.value);
+        if (data.value >= 20) addBadge('highScore', 'High score hero');
+      }
+      if (data.type === 'badge' && data.badge) {
+        addBadge(data.badge, data.badge);
+      }
+    });
+
+    updateScoreBoard();
+    updateBadges();
+    updateRecentList();
+    updateFavoriteList();
+    updateFavoriteButton();
   </script>
 
   <footer>
-    <p>Hope you like my games! I made them all.</p>
+    <p>Hope you like my games! I made them all (with the help of AI).</p>
   </footer>
 
 </body>

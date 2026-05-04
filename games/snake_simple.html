@@ -9,9 +9,11 @@
       background-color: #f0f0f0;
       text-align: center;
       padding: 20px;
+      margin: 0;
     }
     h1 {
       color: #333;
+      margin-bottom: 8px;
     }
     #gameBoard {
       display: grid;
@@ -30,37 +32,59 @@
       background-color: #fff;
     }
     .snake {
-      background-color: #4CAF50;
+      background-color: var(--snake-color, #4caf50);
     }
     .food {
       background-color: #f44336;
     }
-    .score {
-      font-size: 24px;
-      margin: 20px;
+    .score-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .score-row span {
+      font-size: 22px;
+      font-weight: bold;
     }
     button {
-      padding: 10px 20px;
+      padding: 12px 20px;
       font-size: 16px;
-      background-color: #4CAF50;
+      background-color: #4caf50;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      margin: 10px;
+      margin: 8px;
+      min-width: 100px;
     }
     button:hover {
       background-color: #45a049;
     }
     .controls {
-      margin: 20px;
+      margin: 10px auto;
       font-size: 18px;
+      max-width: 420px;
+    }
+    #colorPicker {
+      margin-top: 8px;
+      width: 42px;
+      height: 42px;
+      border: none;
+      cursor: pointer;
+      background: transparent;
     }
   </style>
 </head>
 <body>
   <h1>Snake (Simple)</h1>
-  <div class="score">Score: <span id="score">0</span></div>
+  <div class="score-row">
+    <span>Score: <strong id="score">0</strong></span>
+    <span>Best: <strong id="bestScore">0</strong></span>
+    <label>Color: <input type="color" id="colorPicker" title="Snake color"></label>
+  </div>
   <div id="gameBoard"></div>
   <div class="controls">
     Use arrow keys or buttons to move<br>
@@ -75,12 +99,16 @@
     const boardSize = 20;
     const gameBoard = document.getElementById('gameBoard');
     const scoreElement = document.getElementById('score');
+    const bestScoreElement = document.getElementById('bestScore');
+    const colorPicker = document.getElementById('colorPicker');
 
     let snake = [{x: 10, y: 10}];
     let food = {x: 15, y: 15};
     let direction = 'right';
     let score = 0;
+    let bestScore = parseInt(localStorage.getItem('snakeBestScore') || '0', 10);
     let gameRunning = true;
+    let snakeColor = '#4caf50';
 
     function createBoard() {
       gameBoard.innerHTML = '';
@@ -95,49 +123,35 @@
     }
 
     function updateBoard() {
-      // Clear all cells
       document.querySelectorAll('.cell').forEach(cell => {
         cell.className = 'cell';
       });
-
-      // Draw snake
       snake.forEach(segment => {
         const cell = document.getElementById(`cell-${segment.x}-${segment.y}`);
         if (cell) cell.classList.add('snake');
       });
-
-      // Draw food
       const foodCell = document.getElementById(`cell-${food.x}-${food.y}`);
       if (foodCell) foodCell.classList.add('food');
     }
 
     function moveSnake() {
       if (!gameRunning) return;
-
       const head = {...snake[0]};
-
       switch(direction) {
         case 'up': head.y--; break;
         case 'down': head.y++; break;
         case 'left': head.x--; break;
         case 'right': head.x++; break;
       }
-
-      // Check wall collision
       if (head.x < 0 || head.x >= boardSize || head.y < 0 || head.y >= boardSize) {
         gameOver();
         return;
       }
-
-      // Check self collision
       if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
         gameOver();
         return;
       }
-
       snake.unshift(head);
-
-      // Check food collision
       if (head.x === food.x && head.y === food.y) {
         score++;
         scoreElement.textContent = score;
@@ -145,7 +159,6 @@
       } else {
         snake.pop();
       }
-
       updateBoard();
     }
 
@@ -158,23 +171,47 @@
 
     function changeDirection(newDirection) {
       if (!gameRunning) return;
-
-      // Prevent reverse direction
       const opposites = {
         'up': 'down',
         'down': 'up',
         'left': 'right',
         'right': 'left'
       };
-
       if (opposites[direction] !== newDirection) {
         direction = newDirection;
+        playSound();
+      }
+    }
+
+    function playSound() {
+      try {
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.connect(gain);
+        gain.connect(context.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 350;
+        gain.gain.value = 0.12;
+        osc.start();
+        setTimeout(() => {
+          osc.stop();
+          context.close();
+        }, 80);
+      } catch (e) {
+        console.warn('Sound unavailable', e);
       }
     }
 
     function gameOver() {
       gameRunning = false;
       alert(`Game Over! Score: ${score}`);
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('snakeBestScore', bestScore.toString());
+        bestScoreElement.textContent = bestScore;
+      }
+      sendScore();
     }
 
     function resetGame() {
@@ -185,9 +222,37 @@
       gameRunning = true;
       generateFood();
       updateBoard();
+      sendScore();
     }
 
-    // Keyboard controls
+    function sendScore() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'score', game: 'Snake', value: bestScore }, '*');
+        if (bestScore >= 15) {
+          window.parent.postMessage({ type: 'badge', badge: 'Snake master' }, '*');
+        }
+      }
+    }
+
+    function setSnakeColor(color) {
+      snakeColor = color;
+      document.documentElement.style.setProperty('--snake-color', color);
+      localStorage.setItem('snakeColor', color);
+    }
+
+    colorPicker.addEventListener('input', () => setSnakeColor(colorPicker.value));
+
+    function getColorFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('color');
+    }
+
+    const queryColor = getColorFromQuery();
+    const savedColor = queryColor || localStorage.getItem('snakeColor') || '#4caf50';
+    colorPicker.value = savedColor;
+    setSnakeColor(savedColor);
+    bestScoreElement.textContent = bestScore;
+
     document.addEventListener('keydown', (e) => {
       switch(e.key) {
         case 'ArrowUp': changeDirection('up'); break;
@@ -200,6 +265,7 @@
     createBoard();
     updateBoard();
     setInterval(moveSnake, 200);
+    window.addEventListener('DOMContentLoaded', () => sendScore());
   </script>
 </body>
 </html>

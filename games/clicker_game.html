@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tap Clicker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f9ff;
+      color: #102a43;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #0b6e99;
+    }
+    .score-board {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .score-card {
+      background: white;
+      border: 2px solid #0b6e99;
+      border-radius: 14px;
+      padding: 14px 18px;
+      min-width: 120px;
+    }
+    .score-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #0b6e99;
+    }
+    #tapButton, #megaTapButton, #resetButton {
+      width: 220px;
+      max-width: 100%;
+      margin: 10px auto;
+      padding: 18px 20px;
+      font-size: 20px;
+      border: none;
+      border-radius: 16px;
+      background-color: #0b6e99;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(11,110,153,0.18);
+    }
+    #tapButton:hover, #megaTapButton:hover, #resetButton:hover {
+      background-color: #095c7b;
+    }
+    .controls {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #334e68;
+    }
+    #colorInput {
+      margin-top: 12px;
+      width: 44px;
+      height: 44px;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tap Clicker</h1>
+  <div class="score-board">
+    <div class="score-card">
+      <strong>Score</strong>
+      <span id="score">0</span>
+    </div>
+    <div class="score-card">
+      <strong>Best</strong>
+      <span id="bestScore">0</span>
+    </div>
+  </div>
+  <button id="tapButton">Tap!</button>
+  <button id="megaTapButton">Mega Tap +5</button>
+  <div class="controls">
+    Choose button color: <input type="color" id="colorInput" title="Button color">
+  </div>
+  <button id="resetButton">Restart</button>
+
+  <script>
+    const scoreEl = document.getElementById('score');
+    const bestScoreEl = document.getElementById('bestScore');
+    const tapButton = document.getElementById('tapButton');
+    const megaTapButton = document.getElementById('megaTapButton');
+    const resetButton = document.getElementById('resetButton');
+    const colorInput = document.getElementById('colorInput');
+
+    let score = 0;
+    let bestScore = parseInt(localStorage.getItem('clickerBestScore') || '0', 10);
+    const savedColor = localStorage.getItem('clickerButtonColor') || '#0b6e99';
+    colorInput.value = savedColor;
+    setButtonColor(savedColor);
+    bestScoreEl.textContent = bestScore;
+
+    function playSound(type = 'click') {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioCtx.destination);
+        oscillator.type = 'square';
+        oscillator.frequency.value = type === 'mega' ? 440 : 320;
+        gain.gain.value = 0.18;
+        oscillator.start();
+        setTimeout(() => {
+          oscillator.stop();
+          audioCtx.close();
+        }, 90);
+      } catch (e) {
+        console.warn('Sound unavailable', e);
+      }
+    }
+
+    function setButtonColor(color) {
+      tapButton.style.backgroundColor = color;
+      megaTapButton.style.backgroundColor = color;
+      colorInput.value = color;
+      localStorage.setItem('clickerButtonColor', color);
+    }
+
+    function updateScore() {
+      scoreEl.textContent = score;
+      if (score > bestScore) {
+        bestScore = score;
+        bestScoreEl.textContent = bestScore;
+        localStorage.setItem('clickerBestScore', bestScore.toString());
+        postScore();
+      }
+    }
+
+    function postScore() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'score', game: 'Tap Clicker', value: bestScore }, '*');
+        if (bestScore >= 50) {
+          window.parent.postMessage({ type: 'badge', badge: 'Tap champion' }, '*');
+        }
+      }
+    }
+
+    function tap(amount = 1) {
+      score += amount;
+      updateScore();
+      playSound(amount === 5 ? 'mega' : 'click');
+    }
+
+    tapButton.addEventListener('click', () => tap(1));
+    megaTapButton.addEventListener('click', () => tap(5));
+    resetButton.addEventListener('click', () => {
+      score = 0;
+      scoreEl.textContent = score;
+      playSound('click');
+    });
+    colorInput.addEventListener('input', () => setButtonColor(colorInput.value));
+
+    window.addEventListener('DOMContentLoaded', () => {
+      playSound('click');
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'badge', badge: 'Opened Tap Clicker' }, '*');
+      }
+    });
+  </script>
+</body>
+</html>
