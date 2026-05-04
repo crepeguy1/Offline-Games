@@ -61,6 +61,50 @@
       padding: 0;
       background: transparent;
     }
+    #accountPanel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      align-items: center;
+    }
+    .account-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+    }
+    .account-row input {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      min-width: 160px;
+    }
+    #accountPanel button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+    }
+    #accountPanel button.secondary {
+      background: #777;
+    }
+    #accountPanel .account-message {
+      width: 100%;
+      color: #666;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    #currentUserLabel {
+      width: 100%;
+      color: #333;
+      font-size: 15px;
+      font-weight: bold;
+    }
     #hubInfo {
       max-width: 900px;
       margin: 0 auto 20px;
@@ -280,6 +324,18 @@
     </label>
   </div>
 
+  <div id="accountPanel">
+    <div class="account-row">
+      <input id="usernameInput" placeholder="Username" autocomplete="username">
+      <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password">
+      <button id="loginButton">Login</button>
+      <button id="registerButton" class="secondary">Register</button>
+      <button id="logoutButton" style="display:none;">Logout</button>
+    </div>
+    <div id="accountMessage" class="account-message">Login or register to save your progress.</div>
+    <div id="currentUserLabel" style="display:none;">Logged in as <span id="currentUserName"></span></div>
+  </div>
+
   <div id="hubInfo">
     <div class="info-card">
       <h2>Best Scores</h2>
@@ -457,25 +513,58 @@
     const statsBoard = document.getElementById('statsBoard');
     const showAnimations = document.getElementById('showAnimations');
     const autoPreview = document.getElementById('autoPreview');
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginButton = document.getElementById('loginButton');
+    const registerButton = document.getElementById('registerButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const accountMessage = document.getElementById('accountMessage');
+    const currentUserLabel = document.getElementById('currentUserLabel');
+    const currentUserName = document.getElementById('currentUserName');
     let currentCategory = 'all';
     let currentGame = null;
+    let currentUser = localStorage.getItem('hubCurrentUser');
+    let userAccounts = JSON.parse(localStorage.getItem('hubAccounts') || '{}');
     let audioEnabled = localStorage.getItem('soundEnabled') !== 'false';
     let animationsEnabled = localStorage.getItem('animationsEnabled') !== 'false';
     let previewEnabled = localStorage.getItem('previewEnabled') !== 'false';
-    const bestScores = JSON.parse(localStorage.getItem('hubBestScores') || '{}');
-    const savedBadges = JSON.parse(localStorage.getItem('hubBadges') || '{}');
-    const recentGames = JSON.parse(localStorage.getItem('hubRecentGames') || '[]');
-    const favoriteGames = JSON.parse(localStorage.getItem('hubFavoriteGames') || '[]');
+    let currentProfile = null;
+    let bestScores = {};
+    let savedBadges = {};
+    let recentGames = [];
+    let favoriteGames = [];
     const titleToFile = {};
+    const fileToTitle = {};
+    const gameButtons = document.querySelectorAll('.game-button');
+    const categoryMap = {
+      'reaction': ['Reaction Time'],
+      'arcade': ['Breakout (Simple)', 'Dino Plus (Simple)', 'Snake (Simple)', 'Tetris (Simple)', 'Flappy Clone (Simple)', 'Minesweeper (Simple)', 'Pong (Simple)', 'Frogger (Simple)', 'Space Invaders (Simple)'],
+      'puzzle': ['2048', 'Tic-Tac-Toe', 'Connect Four'],
+      'fun': ['Rock Paper Scissors', 'Memory Game', 'Simon Says', 'Whack-a-Mole', 'Tap Clicker', 'Quiz Game']
+    };
+    const allGames = Array.from(gameButtons).map(btn => btn.querySelector('.label').textContent);
+    const categories = Object.keys(categoryMap);
+    const categoryButtonsArray = Array.from(categoryButtons);
+    const categoryToGames = {};
+    const gameToCategory = {};
+      categories.forEach(cat => {
+        categoryToGames[cat] = categoryMap[cat] || [];
+        categoryToGames[cat].forEach(game => {
+          gameToCategory[game] = cat;
+        });
+      });
     buttons.forEach(button => {
       const label = button.querySelector('.label').textContent;
       const match = button.getAttribute('onclick').match(/loadGame\('(.+?)'\)/);
       if (match) titleToFile[label] = match[1];
     });
 
+    
+
+
     function setAccent(color) {
       document.documentElement.style.setProperty('--accent', color);
-      localStorage.setItem('accentColor', color);
+      persistProfileSettings();
     }
 
     function updateScoreBoard() {
@@ -552,14 +641,14 @@
 
     function toggleAnimations() {
       animationsEnabled = showAnimations.checked;
-      localStorage.setItem('animationsEnabled', animationsEnabled ? 'true' : 'false');
       document.body.classList.toggle('no-animations', !animationsEnabled);
+      persistProfileSettings();
     }
 
     function togglePreview() {
       previewEnabled = autoPreview.checked;
-      localStorage.setItem('previewEnabled', previewEnabled ? 'true' : 'false');
       setPreviewBehavior();
+      persistProfileSettings();
     }
 
     function isFavorite(game) {
@@ -585,7 +674,7 @@
       } else {
         favoriteGames.splice(index, 1);
       }
-      localStorage.setItem('hubFavoriteGames', JSON.stringify(favoriteGames));
+      persistProfile();
       updateFavoriteList();
       updateFavoriteButton();
       updateStatsBoard();
@@ -599,7 +688,7 @@
       }
       recentGames.unshift(game);
       if (recentGames.length > 6) recentGames.pop();
-      localStorage.setItem('hubRecentGames', JSON.stringify(recentGames));
+      persistProfile();
       updateRecentList();
       updateStatsBoard();
     }
@@ -628,8 +717,8 @@
 
     function toggleAudio() {
       audioEnabled = !audioEnabled;
-      localStorage.setItem('soundEnabled', audioEnabled ? 'true' : 'false');
       setMuteText();
+      persistProfileSettings();
     }
 
     function setMuteText() {
@@ -673,14 +762,17 @@
 
     function clearHubData() {
       if (!confirm('Clear all hub data including scores, badges, favorites, and recent plays?')) return;
-      localStorage.removeItem('hubBestScores');
-      localStorage.removeItem('hubBadges');
-      localStorage.removeItem('hubRecentGames');
-      localStorage.removeItem('hubFavoriteGames');
+      if (!currentUser) {
+        localStorage.removeItem('hubBestScores');
+        localStorage.removeItem('hubBadges');
+        localStorage.removeItem('hubRecentGames');
+        localStorage.removeItem('hubFavoriteGames');
+      }
       Object.keys(bestScores).forEach(key => delete bestScores[key]);
       Object.keys(savedBadges).forEach(key => delete savedBadges[key]);
       recentGames.length = 0;
       favoriteGames.length = 0;
+      persistProfile();
       updateScoreBoard();
       updateBadges();
       updateRecentList();
@@ -692,7 +784,7 @@
     function addBadge(key, label) {
       if (!savedBadges[key]) {
         savedBadges[key] = label;
-        localStorage.setItem('hubBadges', JSON.stringify(savedBadges));
+        persistProfile();
         updateBadges();
       }
     }
@@ -701,7 +793,7 @@
       const previous = bestScores[game] || 0;
       if (value > previous) {
         bestScores[game] = value;
-        localStorage.setItem('hubBestScores', JSON.stringify(bestScores));
+        persistProfile();
         updateScoreBoard();
         playClickSound('win');
       }
@@ -765,8 +857,8 @@
     modeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
       document.body.classList.toggle('light-mode');
-      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark-mode' : 'light-mode');
       updateModeText();
+      persistProfileSettings();
     });
 
     const savedAccent = localStorage.getItem('accentColor') || '#4caf50';
@@ -779,6 +871,9 @@
     clearButton.addEventListener('click', clearHubData);
     showAnimations.addEventListener('change', toggleAnimations);
     autoPreview.addEventListener('change', togglePreview);
+    loginButton.addEventListener('click', loginUser);
+    registerButton.addEventListener('click', registerUser);
+    logoutButton.addEventListener('click', logoutUser);
     previewPlay.addEventListener('click', () => {
       const file = previewPlay.dataset.file;
       if (file) loadGame(file);
@@ -800,8 +895,8 @@
     setMuteText();
     setControls();
     setPreviewBehavior();
-    updateGameOfDay();
-    updateStatsBoard();
+    loadCurrentProfile();
+    updateUI();
 
     function loadGame(file) {
       const iframe = frame;
