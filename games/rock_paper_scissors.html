@@ -116,6 +116,7 @@
         function updateScore(winner) {
             if (winner === 'player') {
                 playerScore++;
+                window.parent.postMessage({ type: 'score', score: playerScore }, '*');
             } else if (winner === 'computer') {
                 computerScore++;
             }

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register - Game Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .checkbox-group input {
+            width: auto;
+            margin-right: 8px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        button.secondary {
+            background: #777;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .message {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .error {
+            color: #b71c1c;
+        }
+        .back-link {
+            margin-top: 20px;
+            display: inline-block;
+            color: #4caf50;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login / Register</h1>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter username" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="showPassword">
+            <label for="showPassword">Show password</label>
+        </div>
+        <button id="loginBtn">Login</button>
+        <button id="registerBtn" class="secondary">Register</button>
+        <div id="message" class="message"></div>
+        <a href="index.html" class="back-link">← Back to Hub</a>
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const showPassword = document.getElementById('showPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const messageDiv = document.getElementById('message');
+
+        let userAccounts = JSON.parse(localStorage.getItem('hubAccounts') || '{}');
+
+        function showMessage(msg, error = false) {
+            messageDiv.textContent = msg;
+            messageDiv.className = 'message' + (error ? ' error' : '');
+        }
+
+        function getEmptyProfile() {
+            return {
+                bestScores: {},
+                savedBadges: {},
+                recentGames: [],
+                favoriteGames: [],
+                settings: {
+                    accentColor: '#4caf50',
+                    theme: 'light-mode',
+                    soundEnabled: true,
+                    animationsEnabled: true,
+                    previewEnabled: true
+                }
+            };
+        }
+
+        function saveAccounts() {
+            localStorage.setItem('hubAccounts', JSON.stringify(userAccounts));
+        }
+
+        function login() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            if (!username || !password) {
+                showMessage('Enter both username and password.', true);
+                return;
+            }
+            const account = userAccounts[username];
+            if (!account || account.password !== password) {
+                showMessage('Invalid username or password.', true);
+                return;
+            }
+            localStorage.setItem('hubCurrentUser', username);
+            window.location.href = 'index.html';
+        }
+
+        function register() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            if (!username || !password) {
+                showMessage('Choose a username and password.', true);
+                return;
+            }
+            if (userAccounts[username]) {
+                showMessage('That username is already taken.', true);
+                return;
+            }
+            if (password.length < 4) {
+                showMessage('Password must be at least 4 characters.', true);
+                return;
+            }
+            userAccounts[username] = {
+                password,
+                profile: getEmptyProfile()
+            };
+            saveAccounts();
+            localStorage.setItem('hubCurrentUser', username);
+            window.location.href = 'index.html';
+        }
+
+        showPassword.addEventListener('change', () => {
+            passwordInput.type = showPassword.checked ? 'text' : 'password';
+        });
+
+        loginBtn.addEventListener('click', login);
+        registerBtn.addEventListener('click', register);
+
+        usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') login();
+        });
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>

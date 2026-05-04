@@ -61,6 +61,52 @@
       padding: 0;
       background: transparent;
     }
+    #startScreen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    .start-card {
+      background: var(--card);
+      padding: 28px 24px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      max-width: 360px;
+      width: 100%;
+    }
+    .start-card h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--accent);
+      font-size: 24px;
+    }
+    .start-card p {
+      margin: 0 0 18px;
+      color: var(--foreground);
+      line-height: 1.4;
+    }
+    .start-card button {
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      background: var(--accent);
+      color: white;
+    }
+    .start-card button.secondary {
+      background: #777;
+    }
+    #hubContent {
+      display: none;
+    }
     #accountPanel {
       display: flex;
       flex-wrap: wrap;
@@ -81,6 +127,23 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       min-width: 160px;
+    }
+    .account-row label.small-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #555;
+      font-size: 13px;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fafafa;
+      cursor: pointer;
+    }
+    .account-row label.small-toggle input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
     }
     #accountPanel button {
       padding: 10px 14px;
@@ -312,8 +375,18 @@
   <h1>My Game Hub</h1>
   <p>Pick a game, track your best scores, and play with touch-friendly buttons.</p>
 
-  <div id="topControls">
-    <button id="modeToggle">Toggle Dark Mode</button>
+  <div id="startScreen">
+    <div class="start-card">
+      <h2>Welcome to the Game Hub</h2>
+      <p>Choose how you want to start: login, register, or continue as guest.</p>
+      <button id="startLogin">Login / Register</button>
+      <button id="startGuest" class="secondary">Continue as Guest</button>
+    </div>
+  </div>
+
+  <div id="hubContent">
+    <div id="topControls">
+      <button id="modeToggle">Toggle Dark Mode</button>
     <button id="randomButton">Surprise Me</button>
     <button id="favoriteButton" disabled>Favorite Game</button>
     <button id="muteButton">Mute Sounds</button>
@@ -328,6 +401,7 @@
     <div class="account-row">
       <input id="usernameInput" placeholder="Username" autocomplete="username">
       <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password">
+      <label class="small-toggle"><input id="showPassword" type="checkbox"> Show</label>
       <button id="loginButton">Login</button>
       <button id="registerButton" class="secondary">Register</button>
       <button id="logoutButton" style="display:none;">Logout</button>
@@ -486,6 +560,7 @@
   <p id="currentGameLabel" style="display:none; margin-top:12px; font-size:15px; color:#666;"></p>
 
   <iframe id="gameFrame"></iframe>
+  </div>
 
   <!-- javascript -->
   <script>
@@ -521,6 +596,10 @@
     const accountMessage = document.getElementById('accountMessage');
     const currentUserLabel = document.getElementById('currentUserLabel');
     const currentUserName = document.getElementById('currentUserName');
+    const startScreen = document.getElementById('startScreen');
+    const startLogin = document.getElementById('startLogin');
+    const startGuest = document.getElementById('startGuest');
+    const hubContent = document.getElementById('hubContent');
     let currentCategory = 'all';
     let currentGame = null;
     let currentUser = localStorage.getItem('hubCurrentUser');
@@ -635,8 +714,218 @@
       document.body.classList.toggle('no-animations', !animationsEnabled);
     }
 
+    function showStartScreen() {
+      startScreen.style.display = 'flex';
+      hubContent.style.display = 'none';
+      accountMessage.textContent = 'Login or register to save your progress.';
+      accountMessage.style.color = '#666';
+    }
+
+    function hideStartScreen() {
+      startScreen.style.display = 'none';
+      hubContent.style.display = 'block';
+    }
+
     function setPreviewBehavior() {
       // Preview behavior is handled by the hover listener with a runtime check.
+    }
+
+    function getEmptyProfile() {
+      return {
+        bestScores: {},
+        savedBadges: {},
+        recentGames: [],
+        favoriteGames: [],
+        settings: {
+          accentColor: localStorage.getItem('accentColor') || '#4caf50',
+          theme: localStorage.getItem('theme') || 'light-mode',
+          soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
+          animationsEnabled: localStorage.getItem('animationsEnabled') !== 'false',
+          previewEnabled: localStorage.getItem('previewEnabled') !== 'false'
+        }
+      };
+    }
+
+    function saveAccounts() {
+      localStorage.setItem('hubAccounts', JSON.stringify(userAccounts));
+    }
+
+    function saveCurrentProfile() {
+      if (!currentUser) return;
+      userAccounts[currentUser] = {
+        password: userAccounts[currentUser]?.password || '',
+        profile: currentProfile
+      };
+      saveAccounts();
+    }
+
+    function loadCurrentProfile() {
+      if (currentUser && userAccounts[currentUser]) {
+        currentProfile = userAccounts[currentUser].profile;
+        accountMessage.textContent = `Welcome back, ${currentUser}!`;
+        accountMessage.style.color = '#666';
+        currentUserName.textContent = currentUser;
+        currentUserLabel.style.display = 'block';
+        logoutButton.style.display = 'inline-block';
+      } else {
+        currentProfile = getEmptyProfile();
+        currentUser = null;
+        currentUserLabel.style.display = 'none';
+        logoutButton.style.display = 'none';
+        currentUserName.textContent = '';
+        accountMessage.textContent = 'Login or register to save your progress.';
+        accountMessage.style.color = '#666';
+      }
+      bestScores = currentProfile.bestScores;
+      savedBadges = currentProfile.savedBadges;
+      recentGames = currentProfile.recentGames;
+      favoriteGames = currentProfile.favoriteGames;
+      audioEnabled = currentProfile.settings.soundEnabled;
+      animationsEnabled = currentProfile.settings.animationsEnabled;
+      previewEnabled = currentProfile.settings.previewEnabled;
+      const theme = currentProfile.settings.theme || 'light-mode';
+      document.body.classList.remove('light-mode', 'dark-mode');
+      document.body.classList.add(theme);
+      accentColor.value = currentProfile.settings.accentColor || '#4caf50';
+      setAccent(accentColor.value);
+      setMuteText();
+      showAnimations.checked = animationsEnabled;
+      autoPreview.checked = previewEnabled;
+      document.body.classList.toggle('no-animations', !animationsEnabled);
+    }
+
+    function persistProfile() {
+      if (currentUser) {
+        currentProfile.bestScores = bestScores;
+        currentProfile.savedBadges = savedBadges;
+        currentProfile.recentGames = recentGames;
+        currentProfile.favoriteGames = favoriteGames;
+        saveCurrentProfile();
+      } else {
+        localStorage.setItem('hubBestScores', JSON.stringify(bestScores));
+        localStorage.setItem('hubBadges', JSON.stringify(savedBadges));
+        localStorage.setItem('hubRecentGames', JSON.stringify(recentGames));
+        localStorage.setItem('hubFavoriteGames', JSON.stringify(favoriteGames));
+      }
+    }
+
+    function persistProfileSettings() {
+      if (!currentProfile) currentProfile = getEmptyProfile();
+      currentProfile.settings = {
+        accentColor: accentColor.value,
+        theme: document.body.classList.contains('dark-mode') ? 'dark-mode' : 'light-mode',
+        soundEnabled: audioEnabled,
+        animationsEnabled,
+        previewEnabled
+      };
+      if (currentUser) {
+        saveCurrentProfile();
+      } else {
+        localStorage.setItem('accentColor', accentColor.value);
+        localStorage.setItem('theme', currentProfile.settings.theme);
+        localStorage.setItem('soundEnabled', audioEnabled ? 'true' : 'false');
+        localStorage.setItem('animationsEnabled', animationsEnabled ? 'true' : 'false');
+        localStorage.setItem('previewEnabled', previewEnabled ? 'true' : 'false');
+      }
+    }
+
+    function showAccountMessage(message, error = false) {
+      accountMessage.textContent = message;
+      accountMessage.style.color = error ? '#b71c1c' : '#666';
+    }
+
+    function loginUser() {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+      if (!username || !password) {
+        showAccountMessage('Enter both username and password.', true);
+        return;
+      }
+      const account = userAccounts[username];
+      if (!account || account.password !== password) {
+        showAccountMessage('Invalid username or password.', true);
+        return;
+      }
+      currentUser = username;
+      localStorage.setItem('hubCurrentUser', currentUser);
+      loadCurrentProfile();
+      updateUI();
+      hideStartScreen();
+      showAccountMessage(`Logged in as ${currentUser}.`);
+      usernameInput.value = '';
+      passwordInput.value = '';
+    }
+
+    function registerUser() {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+      if (!username || !password) {
+        showAccountMessage('Choose a username and password.', true);
+        return;
+      }
+      if (userAccounts[username]) {
+        showAccountMessage('That username is already taken.', true);
+        return;
+      }
+      if (password.length < 4) {
+        showAccountMessage('Password must be at least 4 characters.', true);
+        return;
+      }
+      userAccounts[username] = {
+        password,
+        profile: getEmptyProfile()
+      };
+      saveAccounts();
+      currentUser = username;
+      localStorage.setItem('hubCurrentUser', currentUser);
+      loadCurrentProfile();
+      updateUI();
+      hideStartScreen();
+      showAccountMessage(`Account created and logged in as ${currentUser}.`);
+      usernameInput.value = '';
+      passwordInput.value = '';
+    }
+
+    function logoutUser() {
+      persistProfile();
+      currentUser = null;
+      localStorage.removeItem('hubCurrentUser');
+      loadCurrentProfile();
+      updateUI();
+      showAccountMessage('Logged out. Login to save progress.');
+      usernameInput.value = '';
+      passwordInput.value = '';
+    }
+
+    function updateUI() {
+      if (currentUser) {
+        currentUserLabel.style.display = 'block';
+        logoutButton.style.display = 'inline-block';
+      } else {
+        currentUserLabel.style.display = 'none';
+        logoutButton.style.display = 'none';
+      }
+      updateScoreBoard();
+      updateBadges();
+      updateRecentList();
+      updateFavoriteList();
+      updateFavoriteButton();
+      updateStatsBoard();
+      updateGameOfDay();
+    }
+
+    function setAccountEntryListeners() {
+      showPassword.addEventListener('change', () => {
+        passwordInput.type = showPassword.checked ? 'text' : 'password';
+      });
+      usernameInput.addEventListener('keydown', handleAccountEnter);
+      passwordInput.addEventListener('keydown', handleAccountEnter);
+    }
+
+    function handleAccountEnter(event) {
+      if (event.key === 'Enter') {
+        loginUser();
+      }
     }
 
     function toggleAnimations() {
@@ -871,9 +1160,20 @@
     clearButton.addEventListener('click', clearHubData);
     showAnimations.addEventListener('change', toggleAnimations);
     autoPreview.addEventListener('change', togglePreview);
+    setAccountEntryListeners();
     loginButton.addEventListener('click', loginUser);
     registerButton.addEventListener('click', registerUser);
     logoutButton.addEventListener('click', logoutUser);
+    startLogin.addEventListener('click', () => {
+      window.location.href = 'login.html';
+    });
+    startGuest.addEventListener('click', () => {
+      currentUser = null;
+      localStorage.removeItem('hubCurrentUser');
+      loadCurrentProfile();
+      updateUI();
+      hideStartScreen();
+    });
     previewPlay.addEventListener('click', () => {
       const file = previewPlay.dataset.file;
       if (file) loadGame(file);
@@ -897,6 +1197,7 @@
     setPreviewBehavior();
     loadCurrentProfile();
     updateUI();
+    if (currentUser) hideStartScreen();
 
     function loadGame(file) {
       const iframe = frame;
