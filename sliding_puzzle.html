@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Puzzle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #puzzle {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin: 20px;
+        }
+        .tile {
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .empty {
+            background: #f0f0f0;
+        }
+        #moves {
+            font-size: 18px;
+        }
+        #shuffle {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sliding Puzzle</h1>
+    <div id="moves">Moves: 0</div>
+    <button id="shuffle">Shuffle</button>
+    <div id="puzzle"></div>
+
+    <script>
+        const puzzle = document.getElementById('puzzle');
+        const movesDisplay = document.getElementById('moves');
+        const shuffleBtn = document.getElementById('shuffle');
+
+        let tiles = [1, 2, 3, 4, 5, 6, 7, 8, ''];
+        let moves = 0;
+        let emptyIndex = 8;
+
+        function render() {
+            puzzle.innerHTML = '';
+            tiles.forEach((tile, index) => {
+                const div = document.createElement('div');
+                div.className = tile === '' ? 'tile empty' : 'tile';
+                div.textContent = tile;
+                div.addEventListener('click', () => moveTile(index));
+                puzzle.appendChild(div);
+            });
+        }
+
+        function moveTile(index) {
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+            const emptyRow = Math.floor(emptyIndex / 3);
+            const emptyCol = emptyIndex % 3;
+
+            if ((Math.abs(row - emptyRow) === 1 && col === emptyCol) || (Math.abs(col - emptyCol) === 1 && row === emptyRow)) {
+                [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+                emptyIndex = index;
+                moves++;
+                movesDisplay.textContent = 'Moves: ' + moves;
+                render();
+                checkWin();
+            }
+        }
+
+        function shuffle() {
+            for (let i = 0; i < 1000; i++) {
+                const possibleMoves = [];
+                const row = Math.floor(emptyIndex / 3);
+                const col = emptyIndex % 3;
+                if (row > 0) possibleMoves.push(emptyIndex - 3);
+                if (row < 2) possibleMoves.push(emptyIndex + 3);
+                if (col > 0) possibleMoves.push(emptyIndex - 1);
+                if (col < 2) possibleMoves.push(emptyIndex + 1);
+                const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                [tiles[randomMove], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[randomMove]];
+                emptyIndex = randomMove;
+            }
+            moves = 0;
+            movesDisplay.textContent = 'Moves: 0';
+            render();
+        }
+
+        function checkWin() {
+            const winState = [1, 2, 3, 4, 5, 6, 7, 8, ''];
+            if (tiles.every((tile, index) => tile === winState[index])) {
+                alert('You won in ' + moves + ' moves!');
+                window.parent.postMessage({ type: 'score', score: moves }, '*');
+            }
+        }
+
+        shuffleBtn.addEventListener('click', shuffle);
+        render();
+    </script>
+</body>
+</html>

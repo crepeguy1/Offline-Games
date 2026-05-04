@@ -73,6 +73,7 @@ let score = 0;
 function updateScore(points) {
   score += points;
   scoreText.textContent = "Score: " + score;
+  window.parent.postMessage({ type: 'score', score: score }, '*');
 }
 
 function newPiece() {

@@ -60,6 +60,7 @@
       let direction = { x: 0, y: 0 };
       let started = false;
       let gameOver = false;
+      let score = 0;
 
       function placeFood() {
           food.x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
@@ -92,6 +93,8 @@
 
           if (head.x === food.x && head.y === food.y) {
               placeFood();
+              score++;
+              window.parent.postMessage({ type: 'score', score: score }, '*');
           } else {
               snake.pop();
           }

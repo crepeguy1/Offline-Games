@@ -177,6 +177,7 @@
                 resetBall();
             } else if (ball.x + ball.radius > canvas.width) {
                 playerScore++;
+                window.parent.postMessage({ type: 'score', score: playerScore }, '*');
                 resetBall();
             }
 
