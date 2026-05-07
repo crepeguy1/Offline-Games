@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game Hub</title>
   <style>
     :root {
@@ -9,264 +10,357 @@
       --background: #ffffff;
       --foreground: #111111;
       --card: #f4f4f4;
+      --surface: #fbfbfb;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 20px 55px rgba(0,0,0,0.08);
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
     }
     body {
-      font-family: Arial, sans-serif;
-      background-color: var(--background);
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, rgba(76,175,80,0.14), transparent 32%), var(--background);
       color: var(--foreground);
       text-align: center;
-      padding: 20px;
-      margin: 0;
+      padding: 0;
+      line-height: 1.5;
     }
     body.dark-mode {
-      --background: #121212;
-      --foreground: #eeeeee;
-      --card: #1f1f1f;
+      --background: #090909;
+      --foreground: #f1f1f1;
+      --card: #121212;
+      --border: rgba(255,255,255,0.08);
+    }
+    body.light-mode {
+      background-color: var(--background);
+    }
+    main {
+      width: min(1200px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
     }
     h1 {
       color: var(--accent);
-      font-size: 36px;
-      margin-bottom: 8px;
+      font-size: clamp(2.3rem, 3vw, 3.4rem);
+      margin: 0;
+      letter-spacing: -0.03em;
     }
-    p {
-      font-size: 18px;
-      margin-top: 0;
-      margin-bottom: 18px;
+    p.lead {
+      max-width: 42rem;
+      margin: 14px auto 26px;
+      font-size: 1rem;
+      color: #555;
     }
     #topControls {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    #topControls label {
+      display: inline-flex;
+      align-items: center;
       gap: 10px;
-      margin-bottom: 15px;
+      font-size: 0.95rem;
+      color: #444;
+      margin: 0;
+    }
+    button,
+    input[type="color"],
+    input[type="text"] {
+      font: inherit;
+    }
+    button {
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--foreground);
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      background: rgba(76,175,80,0.12);
+    }
+    button:focus-visible {
+      outline: 3px solid rgba(76,175,80,0.35);
+      outline-offset: 3px;
     }
     #modeToggle,
-    .category-btn,
-    .game-button,
-    #accentColor {
-      border: none;
-      border-radius: 8px;
-    }
-    #modeToggle {
-      padding: 10px 14px;
-      background-color: var(--accent);
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    #randomButton,
+    #muteButton,
+    #clearButton {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
     }
     #accentColor {
       width: 42px;
       height: 42px;
-      cursor: pointer;
       padding: 0;
+      border: none;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
       background: transparent;
+      cursor: pointer;
     }
     #hubInfo {
-      max-width: 900px;
-      margin: 0 auto 20px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 0 auto 26px;
+      max-width: 1000px;
+      padding: 0 4px;
     }
     .info-card {
       background: var(--card);
-      padding: 16px;
-      border-radius: 12px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px;
       text-align: left;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      box-shadow: var(--shadow);
     }
     .info-card h2 {
       margin-top: 0;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       color: var(--accent);
-      font-size: 20px;
+      font-size: 1.05rem;
     }
     .badge-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
+      margin-top: 8px;
     }
     .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       background: var(--accent);
-      color: white;
-      padding: 8px 10px;
+      color: #fff;
+      padding: 8px 12px;
       border-radius: 999px;
-      font-size: 13px;
+      font-size: 0.82rem;
     }
-    .score-item {
-      margin-bottom: 8px;
-      font-size: 15px;
+    .score-item,
+    .stats-item {
+      margin-bottom: 10px;
+      font-size: 0.96rem;
+      color: #444;
     }
     .quick-link {
-      display: inline-block;
+      display: inline-flex;
       width: 100%;
-      text-align: left;
-      border: 1px solid #ccc;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
       background: transparent;
       color: var(--foreground);
-      border-radius: 10px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
       cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease;
+      margin-bottom: 10px;
+      text-align: left;
     }
     .quick-link:hover {
+      transform: translateY(-1px);
       background: rgba(76,175,80,0.08);
     }
     .preview-card {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      min-height: 240px;
     }
     .preview-card p {
-      margin: 0 0 10px;
+      margin: 0 0 12px;
       color: #555;
-      line-height: 1.5;
     }
     .play-now-btn {
-      padding: 12px 16px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
       width: 100%;
       margin-top: auto;
+      padding: 14px 18px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
     }
-    .play-now-btn:hover {
-      opacity: 0.92;
-    }
-    body.no-animations *,
-    body.no-animations *::before,
-    body.no-animations *::after {
-      transition: none !important;
-      animation: none !important;
-    }
-    .stats-item {
-      margin-bottom: 6px;
-      font-size: 14px;
+    .help-tip {
+      margin-bottom: 10px;
+      font-size: 0.92rem;
+      color: #666;
+      line-height: 1.4;
     }
     .settings-toggle {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 12px;
     }
     .settings-toggle label {
-      font-size: 14px;
+      font-size: 0.95rem;
+      color: #444;
+      flex: 1;
+      text-align: left;
     }
     .settings-toggle input {
       width: 20px;
       height: 20px;
-    }
-    .help-tip {
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #666;
+      accent-color: var(--accent);
     }
     #filters {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 0 4px;
     }
     .category-btn {
-      padding: 10px 16px;
+      min-width: 96px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
       background-color: var(--card);
       color: var(--foreground);
       cursor: pointer;
-      min-width: 90px;
-      transition: transform 0.15s ease, background 0.15s ease;
+      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
     }
     .category-btn.active,
     .category-btn:hover {
       background-color: var(--accent);
       color: white;
+      border-color: transparent;
       transform: translateY(-1px);
     }
     #search {
-      padding: 12px 14px;
-      font-size: 16px;
-      border: 1px solid #999;
-      border-radius: 10px;
-      width: min(100%, 420px);
-      margin-bottom: 20px;
+      width: min(100%, 520px);
+      max-width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
       background: var(--card);
       color: var(--foreground);
+      margin-bottom: 24px;
     }
     nav {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
       max-width: 1000px;
-      margin: 0 auto;
+      margin: 0 auto 24px;
+      padding: 0 4px;
     }
     .game-button {
-      padding: 16px;
-      font-size: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100px;
+      padding: 18px;
+      font-size: 0.95rem;
       background-color: var(--card);
-      border: 2px solid transparent;
-      color: var(--foreground);
-      cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-      min-height: 72px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
       text-align: left;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
     }
     .game-button:hover {
       transform: translateY(-2px);
       border-color: var(--accent);
-      background: rgba(76,175,80,0.1);
+      background: rgba(76,175,80,0.08);
     }
     .game-button .label {
       display: block;
-      font-weight: bold;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+    .game-button img {
+      width: 100%;
+      max-height: 160px;
+      object-fit: cover;
+      display: block;
+      border-radius: 14px;
+      margin-bottom: 12px;
+    }
+    .game-button .description {
+      color: #555;
+      line-height: 1.4;
     }
     #loading {
       display: none;
-      margin-top: 20px;
-      font-size: 18px;
+      margin-top: 24px;
+      color: #444;
+      font-size: 1rem;
     }
     #back-button {
       display: none;
-      margin-top: 10px;
-      padding: 12px 18px;
+      margin: 0 auto 22px;
       background-color: #f44336;
       color: white;
       border: none;
-      border-radius: 10px;
-      cursor: pointer;
+      border-radius: 14px;
+      padding: 14px 18px;
+    }
+    #currentGameLabel {
+      display: none;
+      margin-top: 12px;
+      font-size: 0.95rem;
+      color: #666;
     }
     iframe {
       width: 100%;
+      aspect-ratio: 16 / 9;
       max-width: 1000px;
-      height: 520px;
-      border: 1px solid #999;
-      margin-top: 20px;
-      border-radius: 12px;
-      background: white;
+      min-height: 320px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      margin: 0 auto;
+      display: block;
     }
     footer {
-      margin-top: 20px;
-      font-size: 14px;
-      color: gray;
+      margin-top: 28px;
+      color: #666;
+      font-size: 0.95rem;
+      padding: 0 8px;
     }
-    @media (max-width: 760px) {
-      #hubInfo {
-        grid-template-columns: 1fr;
-      }
-      iframe {
-        height: 420px;
-      }
-      .game-button {
-        min-height: 64px;
-      }
+    @media (max-width: 860px) {
+      main { padding: 22px 12px 34px; }
+      #topControls { gap: 10px; }
+      .info-card { padding: 18px; }
+      .preview-card { min-height: auto; }
+      .game-button { min-height: 88px; }
+    }
+    @media (max-width: 620px) {
+      h1 { font-size: 2.1rem; }
+      p.lead { font-size: 0.98rem; margin-bottom: 22px; }
+      #topControls { flex-direction: column; align-items: stretch; }
+      #topControls label { justify-content: center; }
+      #filters { gap: 8px; }
+      nav { grid-template-columns: 1fr; }
+      .game-button { padding: 16px; }
+      iframe { min-height: 260px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
 </head>
 <body>
-
+<main>
   <h1>My Game Hub</h1>
-  <p>Pick a game, track your best scores, and play with touch-friendly buttons.</p>
+  <p class="lead">Pick a game, track your best scores, and play with touch-friendly buttons across phones and desktops.</p>
 
   <div id="topControls">
     <button id="modeToggle">Toggle Dark Mode</button>
@@ -348,113 +442,142 @@
   <input type="text" id="search" placeholder="Search games...">
 
   <nav id="game-nav">
+    <!-- Add an image to each card by placing an <img> tag before the label, for example:
+         <img src="images/breakout_simple.png" alt="Breakout Simple thumbnail"> -->
     <button class="game-button" data-category="simple arcade" onclick="loadGame('games/breakout_simple.html')">
+      <img src="images/breakout.png" alt="Breakout Simple thumbnail">
       <span class="label">Breakout (Simple)</span>
-      Smash the bricks
+      <span class="description">Smash the bricks</span>
     </button>
     <button class="game-button" data-category="simple arcade" onclick="loadGame('games/dine_game_simple.html')">
+      <img src="images/dino_simple.png" alt="Dino Plus Simple thumbnail">
       <span class="label">Dino Plus (Simple)</span>
-      Jump over cacti
+      <span class="description">Jump over cacti</span>
     </button>
     <button class="game-button" data-category="simple arcade" onclick="loadGame('games/snake_simple.html')">
+      <img src="images/snake.png" alt="Snake Simple thumbnail">
       <span class="label">Snake (Simple)</span>
-      Eat food and grow
+      <span class="description">Eat food and grow</span>
     </button>
     <button class="game-button" data-category="simple puzzle" onclick="loadGame('games/tetris_simple.html')">
+      <img src="images/tetris.png" alt="Tetris Simple thumbnail">
       <span class="label">Tetris (Simple)</span>
-      Stack the blocks
+      <span class="description">Stack the blocks</span>
     </button>
     <button class="game-button" data-category="simple arcade" onclick="loadGame('games/flappy_bird_simple.html')">
+      <img src="images/flappy_simple.png" alt="Flappy Clone Simple thumbnail">
       <span class="label">Flappy Clone (Simple)</span>
-      Fly between pipes
+      <span class="description">Fly between pipes</span>
     </button>
     <button class="game-button" data-category="simple puzzle" onclick="loadGame('games/minesweeper_simple.html')">
+      <img src="images/minesweeper.png" alt="Minesweeper Simple thumbnail">
       <span class="label">Minesweeper (Simple)</span>
-      Find the mines
+      <span class="description">Find the mines</span>
     </button>
     <button class="game-button" data-category="simple arcade" onclick="loadGame('games/pong_simple.html')">
+      <img src="images/pong.png" alt="Pong Simple thumbnail">
       <span class="label">Pong (Simple)</span>
-      Two-player table tennis
+      <span class="description">Two-player table tennis</span>
     </button>
     <button class="game-button" data-category="simple arcade" onclick="loadGame('games/frogger_simple.html')">
+      <img src="images/frogger_simple.png" alt="Frogger Simple thumbnail">
       <span class="label">Frogger (Simple)</span>
-      Cross the road
+      <span class="description">Cross the road</span>
     </button>
     <button class="game-button" data-category="simple arcade" onclick="loadGame('games/space_invaders_simple.html')">
+      <img src="images/space_invaders.png" alt="Space Invaders Simple thumbnail">
       <span class="label">Space Invaders (Simple)</span>
-      Shoot the aliens
+      <span class="description">Shoot the aliens</span>
     </button>
     <button class="game-button" data-category="fun" onclick="loadGame('games/New_Game.html')">
+      <img src="images/reaction_time.png" alt="Reaction Time thumbnail">
       <span class="label">Reaction Time</span>
-      Test your reflexes
+      <span class="description">Test your reflexes</span>
     </button>
     <button class="game-button" data-category="puzzle" onclick="loadGame('games/2048.html')">
+      <img src="images/2048.png" alt="2048 thumbnail">
       <span class="label">2048</span>
-      Slide to 2048
+      <span class="description">Slide to 2048</span>
     </button>
     <button class="game-button" data-category="puzzle" onclick="loadGame('games/tic_tac_toe.html')">
+      <img src="images/tic_tac_toe.png" alt="Tic-Tac-Toe thumbnail">
       <span class="label">Tic-Tac-Toe</span>
-      X vs O
+      <span class="description">X vs O</span>
     </button>
     <button class="game-button" data-category="fun" onclick="loadGame('games/rock_paper_scissors.html')">
+      <img src="images/rock_paper_scissors.png" alt="Rock Paper Scissors thumbnail">
       <span class="label">Rock Paper Scissors</span>
-      Beat the computer
+      <span class="description">Beat the computer</span>
     </button>
     <button class="game-button" data-category="fun" onclick="loadGame('games/memory_game.html')">
+      <img src="images/memory_game.png" alt="Memory Game thumbnail">
       <span class="label">Memory Game</span>
-      Match the cards
+      <span class="description">Match the cards</span>
     </button>
     <button class="game-button" data-category="fun" onclick="loadGame('games/simon_says.html')">
+      <img src="images/simon_says.png" alt="Simon Says thumbnail">
       <span class="label">Simon Says</span>
-      Repeat the pattern
+      <span class="description">Repeat the pattern</span>
     </button>
     <button class="game-button" data-category="fun" onclick="loadGame('games/whack_a_mole.html')">
+      <img src="images/whack_a_mole.png" alt="Whack-a-Mole thumbnail">
       <span class="label">Whack-a-Mole</span>
-      Hit the moles
+      <span class="description">Hit the moles</span>
     </button>
     <button class="game-button" data-category="fun" onclick="loadGame('games/clicker_game.html')">
+      <img src="images/clicker_game.png" alt="Tap Clicker thumbnail">
       <span class="label">Tap Clicker</span>
-      Tap fast to score
+      <span class="description">Tap fast to score</span>
     </button>
     <button class="game-button" data-category="puzzle" onclick="loadGame('games/connect_four.html')">
+      <img src="images/connect_four.png" alt="Connect Four thumbnail">
       <span class="label">Connect Four</span>
-      Drop four in a row
+      <span class="description">Drop four in a row</span>
     </button>
     <button class="game-button" data-category="simple arcade" onclick="loadGame('catch_game.html')">
+      <img src="images/catch_game.png" alt="Catch the Apples thumbnail">
       <span class="label">Catch the Apples</span>
-      Catch falling apples
+      <span class="description">Catch falling apples</span>
     </button>
     <button class="game-button" data-category="puzzle" onclick="loadGame('sliding_puzzle.html')">
+      <img src="images/sliding_puzzle.png" alt="Sliding Puzzle thumbnail">
       <span class="label">Sliding Puzzle</span>
-      Arrange the tiles
+      <span class="description">Arrange the tiles</span>
     </button>
     <button class="game-button" data-category="fun" onclick="loadGame('balloon_burst.html')">
+      <img src="images/balloon_burst.png" alt="Balloon Burst thumbnail">
       <span class="label">Balloon Burst</span>
-      Pop the balloons
+      <span class="description">Pop the balloons</span>
     </button>
     <button class="game-button" data-category="arcade" onclick="loadGame('games/breakout.html')">
+      <img src="images/breakout.png" alt="Breakout Full thumbnail">
       <span class="label">Breakout (Full)</span>
-      Break all bricks
+      <span class="description">Break all bricks</span>
     </button>
     <button class="game-button" data-category="arcade" onclick="loadGame('games/snake.html')">
+      <img src="images/snake.png" alt="Snake Full thumbnail">
       <span class="label">Snake (Full)</span>
-      Grow longer and longer
+      <span class="description">Grow longer and longer</span>
     </button>
     <button class="game-button" data-category="arcade" onclick="loadGame('games/tetris.html')">
+      <img src="images/tetris.png" alt="Tetris Full thumbnail">
       <span class="label">Tetris (Full)</span>
-      Stack blocks perfectly
+      <span class="description">Stack blocks perfectly</span>
     </button>
     <button class="game-button" data-category="arcade" onclick="loadGame('games/minesweeper.html')">
+      <img src="images/minesweeper.png" alt="Minesweeper Full thumbnail">
       <span class="label">Minesweeper (Full)</span>
-      Flag all mines
+      <span class="description">Flag all mines</span>
     </button>
     <button class="game-button" data-category="arcade" onclick="loadGame('games/pong.html')">
+      <img src="images/pong.png" alt="Pong Full thumbnail">
       <span class="label">Pong (Full)</span>
-      Classic paddle game
+      <span class="description">Classic paddle game</span>
     </button>
     <button class="game-button" data-category="arcade" onclick="loadGame('games/space_invaders.html')">
+      <img src="images/space_invaders.png" alt="Space Invaders Full thumbnail">
       <span class="label">Space Invaders (Full)</span>
-      Defend Earth
+      <span class="description">Defend Earth</span>
     </button>
   </nav>
 
@@ -833,15 +956,17 @@
       });
     });
 
+    function updateModeText() {
+      modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+
     const savedMode = localStorage.getItem('theme');
     if (savedMode) {
       document.body.classList.add(savedMode);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.add('dark-mode');
     } else {
       document.body.classList.add('light-mode');
-    }
-
-    function updateModeText() {
-      modeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     }
 
     updateModeText();
@@ -927,6 +1052,13 @@
       currentGame = null;
       updateFavoriteButton();
     }
+    const easterEgg = document.getElementById('easter-egg');
+    if (easterEgg) {
+      easterEgg.addEventListener('click', () => {
+        addBadge('easterEgg', 'Easter Egg Found!');
+        playClickSound('special');
+      });
+    }
 
     window.addEventListener('message', event => {
       const data = event.data;
@@ -937,6 +1069,7 @@
       }
       if (data.type === 'badge' && data.badge) {
         addBadge(data.badge, data.badge);
+        playClickSound('win');
       }
     });
 
@@ -950,6 +1083,6 @@
   <footer>
     <p>Hope you like my games! I made them all (with the help of AI).</p>
   </footer>
-
+</main>
 </body>
 </html>
