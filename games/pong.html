@@ -5,45 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 10px;
             background-color: #f0f0f0;
         }
         h1 {
             color: #333;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin: 10px 0;
         }
         canvas {
             border: 2px solid #333;
             background-color: black;
+            max-width: 100%;
+            height: auto;
         }
         .score {
-            font-size: 24px;
+            font-size: clamp(1rem, 4vw, 1.5rem);
             margin: 20px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: clamp(10px, 2vw, 18px);
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin: 10px;
+            min-height: 44px;
+            min-width: 44px;
         }
         button:hover {
             background-color: #45a049;
         }
+        button:active {
+            transform: scale(0.95);
+        }
         .controls {
             text-align: center;
             margin: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
         }
-    </style>
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+        }
+    
+  .navigation {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-btn {
+    background: #4caf50 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(12px, 3vw, 20px) !important;
+    border-radius: 8px !important;
+    font-size: clamp(1rem, 3vw, 1.4rem) !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    font-weight: bold !important;
+  }
+  .back-btn:hover {
+    background: #45a049 !important;
+  }</style>
 </head>
 <body>
     <h1>Pong</h1>
@@ -53,6 +92,9 @@
         <p>Use mouse to control paddle</p>
         <button id="restart">Restart Game</button>
     </div>
+<div class="navigation">
+  <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
+</div>
 
     <script>
         const canvas = document.getElementById('pong');

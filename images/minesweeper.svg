@@ -1,0 +1,12 @@
+<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#F44336;stop-opacity:1"/><stop offset="100%" style="stop-color:#E57373;stop-opacity:1"/></linearGradient></defs>
+  <rect width="300" height="200" fill="url(#g5)"/>
+  <text x="150" y="100" font-size="24" font-weight="bold" fill="white" text-anchor="middle">Minesweeper</text>
+  <rect x="60" y="60" width="20" height="20" fill="white" stroke="#333" stroke-width="1"/>
+  <rect x="85" y="60" width="20" height="20" fill="white" stroke="#333" stroke-width="1"/>
+  <rect x="110" y="60" width="20" height="20" fill="white" stroke="#333" stroke-width="1"/>
+  <rect x="60" y="85" width="20" height="20" fill="#EEE" stroke="#333" stroke-width="1"/>
+  <text x="70" y="98" font-size="16" font-weight="bold" fill="red">*</text>
+  <rect x="85" y="85" width="20" height="20" fill="white" stroke="#333" stroke-width="1"/>
+  <text x="95" y="98" font-size="14" font-weight="bold" fill="blue">1</text>
+</svg>

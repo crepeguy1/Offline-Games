@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Balloon Burst</title>
     <style>
+    * {
+      box-sizing: border-box;
+    }
+
         body {
+      margin: 0;
+      padding: 10px;
+      min-min-height: 100vh;
             margin: 0;
             padding: 0;
             background: #87CEEB;
@@ -14,7 +21,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         #gameArea {
             position: relative;
@@ -44,7 +51,31 @@
         #timer {
             font-size: 18px;
         }
-    </style>
+    
+    @media (max-width: 480px) {
+      body { padding: 8px; }
+    }
+  
+
+  .navigation {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-btn {
+    background: #4caf50 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(12px, 3vw, 20px) !important;
+    border-radius: 8px !important;
+    font-size: clamp(1rem, 3vw, 1.4rem) !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    font-weight: bold !important;
+  }
+  .back-btn:hover {
+    background: #45a049 !important;
+  }</style>
 </head>
 <body>
     <h1>Balloon Burst</h1>
@@ -110,5 +141,8 @@
             }
         }, 1000);
     </script>
-</body>
+
+<div class="navigation">
+  <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
+</div></body>
 </html>

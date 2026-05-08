@@ -2,17 +2,32 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2048</title>
 <style>
+  * {
+    box-sizing: border-box;
+  }
   body {
     background: #111;
     color: #eee;
     text-align: center;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    min-height: 100vh;
+  }
+  h1 {
+    margin: 10px 0;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+  }
+  h2 {
+    margin: 5px 0 20px;
+    font-size: clamp(1rem, 4vw, 1.5rem);
   }
   #game {
-    width: 260px;
-    height: 260px;
+    width: min(90vw, 260px);
+    height: min(90vw, 260px);
     margin: 20px auto;
     background: #000;
     border: 3px solid #444;
@@ -24,21 +39,130 @@
   .cell {
     background: #222;
     color: #eee;
-    font-size: 20px;
+    font-size: clamp(0.8rem, 3vw, 1.25rem);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 60px;
+    height: auto;
+    aspect-ratio: 1;
     border-radius: 4px;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
   }
   .controls button {
     background: #333;
     color: white;
     border: none;
-    padding: 10px 18px;
-    margin: 5px;
+    padding: clamp(10px, 2vw, 18px);
+    margin: 0;
     border-radius: 6px;
-    font-size: 18px;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    min-height: 44px;
+    min-width: 44px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .controls button:hover {
+    background: #555;
+  }
+  .controls button:active {
+    transform: scale(0.95);
+  }
+  .navigation {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-btn {
+    background: #4caf50 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(12px, 3vw, 20px) !important;
+    border-radius: 8px !important;
+    font-size: clamp(1rem, 3vw, 1.4rem) !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    font-weight: bold !important;
+  }
+  .back-btn:hover {
+    background: #45a049 !important;
+  }
+  .game-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .leaderboard-btn, .reset-btn {
+    background: #2196F3 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(10px, 2vw, 16px) !important;
+    border-radius: 6px !important;
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem) !important;
+    min-height: 44px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+  }
+  .leaderboard-btn:hover, .reset-btn:hover {
+    background: #1976D2 !important;
+  }
+  .sound-btn {
+    background: #4CAF50 !important;
+  }
+  .sound-btn:hover {
+    background: #45a049 !important;
+  }
+  .sound-btn.muted {
+    background: #666 !important;
+  }
+  .sound-btn.muted:hover {
+    background: #555 !important;
+  }
+  .reset-btn {
+    background: #FF9800 !important;
+  }
+  .reset-btn:hover {
+    background: #F57C00 !important;
+  }
+  .difficulty-selector {
+    text-align: center;
+    margin: 15px 0;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  }
+  .difficulty-selector select {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: inherit;
+  }
+  #leaderboard {
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 300px;
+    text-align: center;
+  }
+  #leaderboardList {
+    text-align: left;
+    margin: 15px 0;
+  }
+  #leaderboardList div {
+    padding: 5px 0;
+    border-bottom: 1px solid #444;
+  }
+  @media (max-width: 480px) {
+    body { padding: 8px; }
+    #game { margin: 15px auto; }
   }
 </style>
 </head>
@@ -46,7 +170,30 @@
 
 <h1>2048</h1>
 <h2 id="scoreText">Score: 0</h2>
+<h3 id="highScoreText">High Score: 0</h3>
+
+<div class="difficulty-selector">
+  <label>Difficulty: </label>
+  <select id="difficulty" onchange="changeDifficulty()">
+    <option value="easy">Easy</option>
+    <option value="normal" selected>Normal</option>
+    <option value="hard">Hard</option>
+  </select>
+</div>
+
 <div id="game"></div>
+
+<div id="leaderboard" style="display: none;">
+  <h3>🏆 Leaderboard</h3>
+  <div id="leaderboardList"></div>
+  <button onclick="hideLeaderboard()" class="back-btn" style="margin-top: 15px;">Close</button>
+</div>
+
+<div class="game-actions">
+  <button onclick="showLeaderboard()" class="leaderboard-btn">📊 Leaderboard</button>
+  <button onclick="toggleSound()" class="sound-btn" id="soundBtn">🔊 Sound On</button>
+  <button onclick="resetGame()" class="reset-btn">🔄 New Game</button>
+</div>
 
 <div class="controls">
   <button onclick="move('up')">⬆️</button><br>
@@ -55,13 +202,103 @@
   <button onclick="move('down')">⬇️</button>
 </div>
 
+<div class="navigation">
+  <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
+</div>
+
 <script>
 const size = 4;
 let board = [];
 let score = 0;
+let highScore = 0;
+let difficulty = 'normal'; // easy, normal, hard
+let soundEnabled = true;
 
 const gameEl = document.getElementById("game");
 const scoreEl = document.getElementById("scoreText");
+const highScoreEl = document.getElementById("highScoreText");
+const difficultyEl = document.getElementById("difficulty");
+
+// Audio context for sound effects
+let audioContext;
+
+function initAudio() {
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    console.log('Web Audio API not supported');
+  }
+}
+
+function playSound(frequency, duration = 200, type = 'sine') {
+  if (!soundEnabled || !audioContext) return;
+
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.frequency.value = frequency;
+  oscillator.type = type;
+
+  gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + duration / 1000);
+}
+
+// Load high score from localStorage
+function loadHighScore() {
+  const saved = localStorage.getItem('2048_highScore');
+  highScore = saved ? parseInt(saved) : 0;
+  highScoreEl.textContent = "High Score: " + highScore;
+}
+
+// Save high score to localStorage
+function saveHighScore() {
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('2048_highScore', highScore);
+    highScoreEl.textContent = "High Score: " + highScore;
+  }
+}
+
+// Leaderboard functions
+function getLeaderboard() {
+  const leaderboard = JSON.parse(localStorage.getItem('2048_leaderboard') || '[]');
+  return leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+}
+
+function saveToLeaderboard(playerName = 'Player') {
+  const leaderboard = getLeaderboard();
+  leaderboard.push({ name: playerName, score: score, date: new Date().toLocaleDateString() });
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard.splice(10); // Keep only top 10
+  localStorage.setItem('2048_leaderboard', JSON.stringify(leaderboard));
+}
+
+function showLeaderboard() {
+  const leaderboard = getLeaderboard();
+  const listEl = document.getElementById('leaderboardList');
+  listEl.innerHTML = leaderboard.length === 0 ?
+    '<div>No scores yet!</div>' :
+    leaderboard.map((entry, index) =>
+      `<div>${index + 1}. ${entry.name}: ${entry.score} (${entry.date})</div>`
+    ).join('');
+  document.getElementById('leaderboard').style.display = 'block';
+}
+
+function hideLeaderboard() {
+  document.getElementById('leaderboard').style.display = 'none';
+}
+
+function resetGame() {
+  score = 0;
+  initBoard();
+  scoreEl.textContent = "Score: 0";
+}
 
 function initBoard() {
   board = [];
@@ -74,6 +311,10 @@ function initBoard() {
   addRandom();
   addRandom();
   draw();
+  loadHighScore();
+  loadDifficulty();
+  loadSoundSetting();
+  initAudio();
 }
 
 function addRandom() {
@@ -84,8 +325,42 @@ function addRandom() {
     }
   }
   if (empty.length === 0) return;
+
+  // Difficulty affects 4 spawn rate: easy=20%, normal=10%, hard=5%
+  const fourRate = difficulty === 'easy' ? 0.2 : difficulty === 'hard' ? 0.05 : 0.1;
+
   let spot = empty[Math.floor(Math.random() * empty.length)];
-  board[spot.i][spot.j] = Math.random() < 0.9 ? 2 : 4;
+  board[spot.i][spot.j] = Math.random() < fourRate ? 4 : 2;
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const soundBtn = document.getElementById('soundBtn');
+  soundBtn.textContent = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+  soundBtn.classList.toggle('muted', !soundEnabled);
+  localStorage.setItem('2048_soundEnabled', soundEnabled);
+
+  if (soundEnabled) {
+    initAudio();
+    playSound(440, 100); // Test sound
+  }
+}
+
+function loadSoundSetting() {
+  const saved = localStorage.getItem('2048_soundEnabled');
+  soundEnabled = saved !== null ? JSON.parse(saved) : true;
+  const soundBtn = document.getElementById('soundBtn');
+  soundBtn.textContent = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+  soundBtn.classList.toggle('muted', !soundEnabled);
+}
+
+// Load difficulty from localStorage
+function loadDifficulty() {
+  const saved = localStorage.getItem('2048_difficulty');
+  if (saved) {
+    difficulty = saved;
+    difficultyEl.value = difficulty;
+  }
 }
 
 function draw() {
@@ -99,6 +374,7 @@ function draw() {
     }
   }
   scoreEl.textContent = "Score: " + score;
+  saveHighScore(); // Update high score if needed
 }
 
 function slide(row) {
@@ -161,6 +437,7 @@ function move(direction) {
 
   if (JSON.stringify(board) !== oldBoard) {
     addRandom();
+    playSound(300 + Math.random() * 200, 150); // Move sound
     draw();
     checkGameOver();
   }
@@ -216,11 +493,56 @@ function checkGameOver() {
       if (i < size - 1 && board[i][j] === board[i+1][j]) return;
     }
   }
-  alert("Game Over! Score: " + score);
+  playSound(150, 500, 'sawtooth'); // Game over sound
+  saveToLeaderboard();
+  setTimeout(() => {
+    alert("Game Over! Score: " + score + (score === highScore ? " 🎉 New High Score!" : ""));
+  }, 100);
 }
 
-initBoard();
-</script>
+// Touch gesture support
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
 
-</body>
-</html>
+function handleTouchStart(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}
+
+function handleTouchEnd(e) {
+  touchEndX = e.changedTouches[0].clientX;
+  touchEndY = e.changedTouches[0].clientY;
+  handleSwipe();
+}
+
+function handleSwipe() {
+  const deltaX = touchEndX - touchStartX;
+  const deltaY = touchEndY - touchStartY;
+  const minSwipeDistance = 50;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    // Horizontal swipe
+    if (Math.abs(deltaX) > minSwipeDistance) {
+      if (deltaX > 0) {
+        move('right');
+      } else {
+        move('left');
+      }
+    }
+  } else {
+    // Vertical swipe
+    if (Math.abs(deltaY) > minSwipeDistance) {
+      if (deltaY > 0) {
+        move('down');
+      } else {
+        move('up');
+      }
+    }
+  }
+}
+
+// Add touch event listeners
+document.addEventListener('touchstart', handleTouchStart, { passive: false });
+document.addEventListener('touchend', handleTouchEnd, { passive: false });

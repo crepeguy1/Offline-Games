@@ -2,9 +2,17 @@
 <html>
 <head>
   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tap Clicker</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
+      padding: 10px;
+      min-min-height: 100vh;
       font-family: Arial, sans-serif;
       background-color: #f0f9ff;
       color: #102a43;
@@ -13,6 +21,7 @@
       margin: 0;
     }
     h1 {
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
       margin-bottom: 10px;
       color: #0b6e99;
     }
@@ -64,7 +73,31 @@
       cursor: pointer;
       background: transparent;
     }
-  </style>
+  
+    @media (max-width: 480px) {
+      body { padding: 8px; }
+    }
+  
+
+  .navigation {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-btn {
+    background: #4caf50 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(12px, 3vw, 20px) !important;
+    border-radius: 8px !important;
+    font-size: clamp(1rem, 3vw, 1.4rem) !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    font-weight: bold !important;
+  }
+  .back-btn:hover {
+    background: #45a049 !important;
+  }</style>
 </head>
 <body>
   <h1>Tap Clicker</h1>
@@ -83,6 +116,9 @@
   <div class="controls">
     Choose button color: <input type="color" id="colorInput" title="Button color">
   </div>
+<div class="navigation">
+  <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
+</div>
   <button id="resetButton">Restart</button>
 
   <script>

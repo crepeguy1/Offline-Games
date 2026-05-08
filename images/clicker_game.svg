@@ -1,0 +1,7 @@
+<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="g16" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6F42C1;stop-opacity:1"/><stop offset="100%" style="stop-color:#9575CD;stop-opacity:1"/></linearGradient></defs>
+  <rect width="300" height="200" fill="url(#g16)"/>
+  <text x="150" y="60" font-size="24" font-weight="bold" fill="white" text-anchor="middle">Tap Clicker</text>
+  <circle cx="150" cy="130" r="40" fill="white" opacity="0.85" stroke="white" stroke-width="2"/>
+  <text x="150" y="145" font-size="28" font-weight="bold" fill="#6F42C1" text-anchor="middle">TAP</text>
+</svg>

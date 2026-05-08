@@ -1,0 +1,9 @@
+<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="g12" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00897B;stop-opacity:1"/><stop offset="100%" style="stop-color:#26A69A;stop-opacity:1"/></linearGradient></defs>
+  <rect width="300" height="200" fill="url(#g12)"/>
+  <text x="150" y="60" font-size="20" font-weight="bold" fill="white" text-anchor="middle">Rock Paper</text>
+  <text x="150" y="90" font-size="20" font-weight="bold" fill="white" text-anchor="middle">Scissors</text>
+  <polygon points="70,120 85,100 100,120" fill="white" opacity="0.9"/>
+  <circle cx="150" cy="115" r="12" fill="white" opacity="0.9"/>
+  <polygon points="200,120 215,100 230,120 225,135 205,135" fill="white" opacity="0.9"/>
+</svg>

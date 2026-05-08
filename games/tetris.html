@@ -2,27 +2,85 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simple Tetris</title>
 <style>
+  * {
+    box-sizing: border-box;
+  }
   body {
     background: #111;
     color: #eee;
     text-align: center;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    min-height: 100vh;
+  }
+  h1 {
+    margin: 10px 0;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+  }
+  h2 {
+    margin: 5px 0 20px;
+    font-size: clamp(1rem, 4vw, 1.5rem);
   }
   canvas {
     background: #000;
-    margin-top: 10px;
+    margin: 15px auto;
+    display: block;
     border: 3px solid #444;
+    max-width: 100%;
+    height: auto;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
   }
   .controls button {
     background: #333;
     color: white;
     border: none;
-    padding: 12px 20px;
-    margin: 5px;
+    padding: clamp(10px, 2vw, 20px);
+    margin: 0;
     border-radius: 6px;
-    font-size: 18px;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    min-height: 44px;
+    min-width: 44px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .controls button:hover {
+    background: #555;
+  }
+  .controls button:active {
+    transform: scale(0.95);
+  }
+  .navigation {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-btn {
+    background: #4caf50 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(12px, 3vw, 20px) !important;
+    border-radius: 8px !important;
+    font-size: clamp(1rem, 3vw, 1.4rem) !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    font-weight: bold !important;
+  }
+  .back-btn:hover {
+    background: #45a049 !important;
+  }
+  @media (max-width: 480px) {
+    body { padding: 8px; }
+    canvas { margin: 10px auto; }
   }
 </style>
 </head>
@@ -38,6 +96,10 @@
   <button onclick="rotate()">⟳</button>
   <button onclick="moveRight()">➡️</button>
   <button onclick="drop()">⬇️</button>
+</div>
+
+<div class="navigation">
+  <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
 </div>
 
 <script>

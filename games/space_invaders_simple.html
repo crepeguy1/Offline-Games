@@ -2,9 +2,17 @@
 <html>
 <head>
   <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Space Invaders (Simple)</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
+      padding: 10px;
+      min-min-height: 100vh;
       font-family: Arial, sans-serif;
       background-color: #000;
       color: #fff;
@@ -12,6 +20,7 @@
       padding: 20px;
     }
     h1 {
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
       color: #fff;
     }
     #gameArea {
@@ -53,15 +62,17 @@
       margin: 20px;
     }
     button {
-      padding: 10px 20px;
-      font-size: 16px;
+      padding: clamp(10px, 2vw, 18px);
+      font-size: clamp(0.9rem, 3vw, 1.2rem);
       background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       margin: 10px;
-    }
+          min-height: 44px;
+      min-width: 44px;
+      cursor: pointer;}
     button:hover {
       background-color: #45a049;
     }
@@ -69,7 +80,31 @@
       margin: 20px;
       font-size: 18px;
     }
-  </style>
+  
+    @media (max-width: 480px) {
+      body { padding: 8px; }
+    }
+  
+
+  .navigation {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-btn {
+    background: #4caf50 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(12px, 3vw, 20px) !important;
+    border-radius: 8px !important;
+    font-size: clamp(1rem, 3vw, 1.4rem) !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    font-weight: bold !important;
+  }
+  .back-btn:hover {
+    background: #45a049 !important;
+  }</style>
 </head>
 <body>
   <h1>Space Invaders (Simple)</h1>
@@ -83,6 +118,9 @@
     <button onclick="movePlayer('right')">→</button>
     <button onclick="shoot()">Shoot</button>
   </div>
+<div class="navigation">
+  <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
+</div>
   <button onclick="resetGame()">Restart</button>
 
   <script>

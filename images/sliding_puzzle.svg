@@ -1,0 +1,13 @@
+<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="g19" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0097A7;stop-opacity:1"/><stop offset="100%" style="stop-color:#4DD0E1;stop-opacity:1"/></linearGradient></defs>
+  <rect width="300" height="200" fill="url(#g19)"/>
+  <text x="150" y="60" font-size="22" font-weight="bold" fill="white" text-anchor="middle">Sliding Puzzle</text>
+  <rect x="60" y="90" width="30" height="30" fill="white" stroke="#333" stroke-width="1" opacity="0.9"/>
+  <text x="75" y="112" font-size="16" font-weight="bold" fill="black" text-anchor="middle">1</text>
+  <rect x="95" y="90" width="30" height="30" fill="white" stroke="#333" stroke-width="1" opacity="0.9"/>
+  <text x="110" y="112" font-size="16" font-weight="bold" fill="black" text-anchor="middle">2</text>
+  <rect x="130" y="90" width="30" height="30" fill="white" stroke="#333" stroke-width="1" opacity="0.9"/>
+  <text x="145" y="112" font-size="16" font-weight="bold" fill="black" text-anchor="middle">3</text>
+  <rect x="165" y="90" width="30" height="30" fill="white" stroke="#333" stroke-width="1" opacity="0.9"/>
+  <text x="180" y="112" font-size="16" font-weight="bold" fill="black" text-anchor="middle">4</text>
+</svg>

@@ -5,17 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simon Says</title>
     <style>
+    * {
+      box-sizing: border-box;
+    }
+
         body {
+      margin: 0;
+      padding: 10px;
+      min-min-height: 100vh;
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
         }
         h1 {
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
             color: #333;
         }
         .game-board {
@@ -31,7 +39,9 @@
             border-radius: 10px;
             cursor: pointer;
             transition: opacity 0.3s;
-        }
+              min-height: 44px;
+      min-width: 44px;
+      cursor: pointer;}
         .color-button:active {
             opacity: 0.7;
         }
@@ -49,8 +59,8 @@
             margin: 10px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: clamp(10px, 2vw, 18px);
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -65,7 +75,31 @@
             display: flex;
             gap: 10px;
         }
-    </style>
+    
+    @media (max-width: 480px) {
+      body { padding: 8px; }
+    }
+  
+
+  .navigation {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-btn {
+    background: #4caf50 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(12px, 3vw, 20px) !important;
+    border-radius: 8px !important;
+    font-size: clamp(1rem, 3vw, 1.4rem) !important;
+    min-height: 48px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    font-weight: bold !important;
+  }
+  .back-btn:hover {
+    background: #45a049 !important;
+  }</style>
 </head>
 <body>
     <h1>Simon Says</h1>
@@ -81,6 +115,9 @@
         <button id="start">Start Game</button>
         <button id="reset">Reset</button>
     </div>
+<div class="navigation">
+  <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
+</div>
 
     <script>
         const colors = ['red', 'green', 'blue', 'yellow'];
