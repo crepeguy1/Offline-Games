@@ -35,6 +35,51 @@
           font-size: 20px;
       }
   
+  .game-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .leaderboard-btn, .reset-btn {
+    background: #2196F3 !important;
+    color: white !important;
+    border: none !important;
+    padding: clamp(10px, 2vw, 16px) !important;
+    border-radius: 6px !important;
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem) !important;
+    min-height: 44px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+  }
+  .leaderboard-btn:hover, .reset-btn:hover {
+    background: #1976D2 !important;
+  }
+  .reset-btn {
+    background: #FF9800 !important;
+  }
+  .reset-btn:hover {
+    background: #F57C00 !important;
+  }
+  #leaderboard {
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 300px;
+    text-align: center;
+  }
+  #leaderboardList {
+    text-align: left;
+    margin: 15px 0;
+  }
+  #leaderboardList div {
+    padding: 5px 0;
+    border-bottom: 1px solid #444;
+  }
+
   .navigation {
     margin-top: 30px;
     text-align: center;
@@ -58,6 +103,8 @@
 <body>
 
   <h1>Snake Game</h1>
+  <h2 id="scoreText">Score: 0</h2>
+  <h3 id="highScoreText">High Score: 0</h3>
   <p>Use arrow keys, WASD, swipe, or buttons to play.</p>
 
   <canvas id="gameCanvas" width="400" height="400"></canvas>
@@ -69,6 +116,18 @@
       <button class="btn" onclick="setDirection(1, 0)">➡️</button><br>
       <button class="btn" onclick="setDirection(0, 1)">⬇️</button>
   </div>
+
+  <div id="leaderboard" style="display: none;">
+    <h3>🏆 Leaderboard</h3>
+    <div id="leaderboardList"></div>
+    <button onclick="hideLeaderboard()" class="back-btn" style="margin-top: 15px;">Close</button>
+  </div>
+
+  <div class="game-actions">
+    <button onclick="showLeaderboard()" class="leaderboard-btn">📊 Leaderboard</button>
+    <button onclick="resetGame()" class="reset-btn">🔄 New Game</button>
+  </div>
+
 <div class="navigation">
   <button onclick="window.location.href='../index.html'" class="back-btn">🏠 Back to Game Hub</button>
 </div>
@@ -84,6 +143,66 @@
       let started = false;
       let gameOver = false;
       let score = 0;
+      let highScore = 0;
+
+      const scoreText = document.getElementById("scoreText");
+      const highScoreText = document.getElementById("highScoreText");
+
+      // Load high score from localStorage
+      function loadHighScore() {
+        const saved = localStorage.getItem('snake_highScore');
+        highScore = saved ? parseInt(saved) : 0;
+        highScoreText.textContent = "High Score: " + highScore;
+      }
+
+      // Save high score to localStorage
+      function saveHighScore() {
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem('snake_highScore', highScore);
+          highScoreText.textContent = "High Score: " + highScore;
+        }
+      }
+
+      // Leaderboard functions
+      function getLeaderboard() {
+        const leaderboard = JSON.parse(localStorage.getItem('snake_leaderboard') || '[]');
+        return leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+      }
+
+      function saveToLeaderboard(playerName = 'Player') {
+        const leaderboard = getLeaderboard();
+        leaderboard.push({ name: playerName, score: score, date: new Date().toLocaleDateString() });
+        leaderboard.sort((a, b) => b.score - a.score);
+        leaderboard.splice(10); // Keep only top 10
+        localStorage.setItem('snake_leaderboard', JSON.stringify(leaderboard));
+      }
+
+      function showLeaderboard() {
+        const leaderboard = getLeaderboard();
+        const listEl = document.getElementById('leaderboardList');
+        listEl.innerHTML = leaderboard.length === 0 ?
+          '<div>No scores yet!</div>' :
+          leaderboard.map((entry, index) =>
+            `<div>${index + 1}. ${entry.name}: ${entry.score} (${entry.date})</div>`
+          ).join('');
+        document.getElementById('leaderboard').style.display = 'block';
+      }
+
+      function hideLeaderboard() {
+        document.getElementById('leaderboard').style.display = 'none';
+      }
+
+      function resetGame() {
+        snake = [{ x: 200, y: 200 }];
+        direction = { x: 0, y: 0 };
+        started = false;
+        gameOver = false;
+        score = 0;
+        scoreText.textContent = "Score: 0";
+        placeFood();
+        draw();
+      }
 
       function placeFood() {
           food.x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
@@ -108,7 +227,9 @@
               snake.some(segment => segment.x === head.x && segment.y === head.y)
           ) {
               gameOver = true;
-              alert("Game Over! Refresh or reload the hub to play again.");
+              saveHighScore();
+              saveToLeaderboard();
+              alert("Game Over! Score: " + score + (score === highScore ? " 🎉 New High Score!" : ""));
               return;
           }
 
@@ -117,6 +238,8 @@
           if (head.x === food.x && head.y === food.y) {
               placeFood();
               score++;
+              scoreText.textContent = "Score: " + score;
+              saveHighScore();
               window.parent.postMessage({ type: 'score', score: score }, '*');
           } else {
               snake.pop();
@@ -183,6 +306,7 @@
           }
       });
 
+      loadHighScore();
       placeFood();
       setInterval(gameLoop, 100);
   </script>
